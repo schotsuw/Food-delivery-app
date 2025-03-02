@@ -60,48 +60,7 @@ export default function PopularRestaurants() {
         </div>
       </section>
 
-      {/* App Download Banner */}
-      <section className="relative rounded-2xl overflow-hidden bg-gray-100">
-        <div className="grid md:grid-cols-2 items-center">
-          <div>
-            <img
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-UizPn6GT56qh0Nm8A2aGMxkkvSP54x.png"
-              alt="People using Order.uk app"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="p-8 md:p-12">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">
-              Order<span className="text-red-500">.uk</span>ing is more
-            </h2>
-            <div className="bg-navy inline-block rounded-full px-6 py-2 mb-6">
-              <p className="text-xl md:text-2xl">
-                <span className="text-red-500">Personalised</span>
-                <span className="text-white"> & Instant</span>
-              </p>
-            </div>
-            <p className="text-gray-600 mb-8">
-              Download the Order.uk app for faster ordering
-            </p>
-            <div className="flex gap-4">
-              <a href="#" className="hover:opacity-80 transition-opacity">
-                <img
-                  src="/app-store.png"
-                  alt="Download on the App Store"
-                  className="h-10"
-                />
-              </a>
-              <a href="#" className="hover:opacity-80 transition-opacity">
-                <img
-                  src="/google-play.png"
-                  alt="Get it on Google Play"
-                  className="h-10"
-                />
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
+      
     </div>
   );
 }

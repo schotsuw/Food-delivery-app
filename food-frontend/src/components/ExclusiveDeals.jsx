@@ -40,7 +40,7 @@ export default function ExclusiveDeals() {
       <section>
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold">
-            Up to -40% 🎀 Order.uk exclusive deals
+            Up to -40% 🎀 FoodFetch exclusive deals
           </h2>
           <div className="flex gap-3">
             {categories.map((category) => (
@@ -85,7 +85,7 @@ export default function ExclusiveDeals() {
       {/* Popular Categories Section */}
       <section>
         <h2 className="text-2xl font-bold mb-8">
-          Order.uk Popular Categories 😋
+          FoodFetch Popular Categories 😋
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {popularCategories.map((category) => (

@@ -6,14 +6,12 @@ import {
     Button, 
     Badge,
 } from '@mui/material';
-import { NavLink, useNavigate } from 'react-router-dom';
+import { NavLink } from 'react-router-dom';
 import logo from '../assets/logo2.png';
 import CartPopup from '../Popup/CartPopup';
 import { ButtonAnimate } from './ButtonUnique/ButtonAnimate';
 import { motion } from "framer-motion";
 import { CartButton } from './ButtonUnique/CartButton';
-import { useOrder } from '../context/OrderContext';
-
 const Navbar = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cartItems, setCartItems] = useState([
@@ -21,13 +19,11 @@ const Navbar = () => {
     { id: 2, name: 'French Fries', price: 2.99, quantity: 2 },
     { id: 3, name: 'Coca Cola', price: 1.99, quantity: 2 },
   ]);
-  const { hasActiveOrders, currentOrderId } = useOrder();
-  const navigate = useNavigate();
 
   const buttonToggleClass = ({ isActive }) =>
     isActive
-      ? "!bg-red-500 !text-white !rounded-full !underline hover:bg-red-200 cursor-pointer"
-      : "!rounded-full !underline cursor-pointer";
+      ? "!bg-red-500 !text-white !rounded-full !underline hover:bg-red-200"
+      : "!rounded-full !underline hover:bg-red-200";
   
   const variantToggleClass = ({ isActive }) => (isActive ? "contained" : "");
   
@@ -36,7 +32,6 @@ const Navbar = () => {
     hover: { scale: 1.1, transition: { duration: 0.3, ease: "easeInOut" } },
     tap: { scale: 0.95 },
   };
-  
   const handleCartToggle = () => {
     setIsCartOpen(!isCartOpen);
   };
@@ -48,14 +43,6 @@ const Navbar = () => {
       setCartItems(cartItems.map(item => 
         item.id === id ? { ...item, quantity: newQuantity } : item
       ));
-    }
-  };
-
-  const handleTrackOrderClick = () => {
-    if (hasActiveOrders() && currentOrderId) {
-      navigate(`/track-order/${currentOrderId}`);
-    } else {
-      navigate('/no-active-orders');
     }
   };
 
@@ -74,56 +61,35 @@ const Navbar = () => {
             />
           </NavLink>
           <nav className="flex gap-4">
-            {[
-              { path: "/", label: "Home" },
-              { path: "/restaurant", label: "Restaurants" },
-              { path: "/special", label: "Special Offers" },
-              // Handle Track Order differently
-              { path: "#", label: "Track Order", onClick: handleTrackOrderClick }
-            ].map(({ path, label, onClick }) => (
-              <div key={label}>
-                {onClick ? (
-                  <motion.div
-                    variants={buttonVariants}
-                    initial="initial"
-                    whileHover="hover"
-                    whileTap="tap"
-                    className="inline-block cursor-pointer"
-                  >
-                    <Button
-                      variant="text"
-                      className={buttonToggleClass({ isActive: false })}
-                      onClick={onClick}
-                    >
-                      {label}
-                    </Button>
-                  </motion.div>
-                ) : (
-                  <NavLink key={path} to={path} className={({ isActive }) => buttonToggleClass({ isActive }) }>
-                    {({ isActive }) => (
-                      <motion.div
-                        variants={buttonVariants}
-                        initial="initial"
-                        whileHover="hover"
-                        whileTap="tap"
-                        className="inline-block cursor-pointer"
-                      >
-                        <Button
-                          variant={variantToggleClass({ isActive })}
-                          className={buttonToggleClass({ isActive })}
-                        >
-                          {label}
-                        </Button>
-                      </motion.div>
-                    )}
-                  </NavLink>
-                )}
-              </div>
-            ))}
-          </nav>
+      {[
+        { path: "/", label: "Home" },
+        { path: "/restaurant", label: "Restaurants" },
+        { path: "/special", label: "Special Offers" },
+        { path: "/track-order", label: "Track Order" },
+      ].map(({ path, label }) => (
+        <NavLink key={path} to={path} className={({ isActive }) => buttonToggleClass({ isActive })}>
+          {({ isActive }) => (
+            <motion.div
+              variants={buttonVariants}
+              initial="initial"
+              whileHover="hover"
+              whileTap="tap"
+              className="inline-block"
+            >
+              <Button
+                variant={variantToggleClass({ isActive })}
+                className={buttonToggleClass({ isActive })}
+              >
+                {label}
+              </Button>
+            </motion.div>
+          )}
+        </NavLink>
+      ))}
+    </nav>
 
           <div className="flex items-center gap-4">
-            <CartButton
+          <CartButton
               totalItems={totalItems}
               totalPrice={totalPrice}
               handleCartToggle={handleCartToggle}
@@ -145,6 +111,6 @@ const Navbar = () => {
       />
     </>
   );
-};
+}
 
 export default Navbar;
