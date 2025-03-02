@@ -1,14 +1,10 @@
 import { 
-  AppBar, 
-  Toolbar, 
   Button,
   TextField,
   InputAdornment
 } from '@mui/material';
 import { 
-  ShoppingCart, 
-  LocationOn, 
-  Person,
+ 
   Search,
   Receipt,
   DirectionsBike,
@@ -19,54 +15,7 @@ import {
 export default function RestaurantDetail() {
   return (
     <div className="min-h-screen bg-white">
-      {/* Promo Banner */}
-      <div className="bg-white py-2 px-4 flex justify-between items-center text-sm border-b">
-        <div className="flex items-center gap-2">
-          <span className="text-yellow-400">✨</span>
-          <span>Get 5% Off your first order, <span className="text-red-500">Promo: ORDER5</span></span>
-        </div>
-        <div className="flex items-center gap-2">
-          <LocationOn className="text-gray-600" />
-          <span>Regent Street, A4, A4201, London</span>
-          <Button color="warning" size="small">Change Location</Button>
-        </div>
-      </div>
-
-      {/* Navigation */}
-      <AppBar position="static" color="transparent" elevation={0}>
-        <Toolbar className="justify-between">
-          <div className="text-2xl font-bold">
-            Order<span className="text-red-500">.uk</span>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-6">
-            {['Home', 'Special Offers', 'Restaurants', 'Track Order'].map((item) => (
-              <Button
-                key={item}
-                variant={item === 'Restaurants' ? 'contained' : 'text'}
-                className={item === 'Restaurants' ? '!bg-primary !text-white' : ''}
-              >
-                {item}
-              </Button>
-            ))}
-          </div>
-
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-lg">
-              <ShoppingCart />
-              <span>23 Items</span>
-              <span className="border-l pl-2">GBP 79.89</span>
-            </div>
-            <Button
-              variant="contained"
-              className="!bg-gray-900 !text-white"
-              startIcon={<Person />}
-            >
-              Login/Signup
-            </Button>
-          </div>
-        </Toolbar>
-      </AppBar>
+      
 
       {/* Restaurant Header */}
       <div className="relative">
@@ -82,7 +31,7 @@ export default function RestaurantDetail() {
         <div className="relative z-20 container mx-auto px-4 py-12">
           <p className="text-gray-600 mb-2">Im loving it!</p>
           <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-            McDonald East London
+            McDonald Fredericton
           </h1>
           
           <div className="flex flex-wrap gap-4 mb-6">
@@ -122,7 +71,7 @@ export default function RestaurantDetail() {
       <div className="container mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-8">
           <h2 className="text-2xl font-bold">
-            All Offers from McDonald East London
+            All Offers from McDonald Fredericton
           </h2>
           <TextField
             placeholder="Search from menu..."

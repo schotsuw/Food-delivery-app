@@ -1,18 +1,20 @@
 import LandingPage from './pages/LandingPage';
 import { ThemeProvider } from '@mui/material/styles';
 import { createTheme } from '@mui/material';
-// import ExclusiveDeals from './components/ExclusiveDeals';
-// import PopularRestaurants from './components/PopularRestaurant';
-// import AboutSection from './components/AboutSection';
 import { BrowserRouter, Routes, Route } from "react-router";
 import MainLayout from './layouts/MainLayout';
 import RestaurantPage from './pages/RestaurantPage';
 import TrackOrderPage from './pages/TrackOrderPage';
-import CartPage from './pages/CartPage';
 import SpecialOfferPage from './pages/SpecialOfferPage';
 import LoginSignUpPage from './pages/LoginSignUpPage';
+import LocationPopup from './Popup/LocationPopup';
+import NoActiveOrdersPage from './pages/NoActiveOrdersPage';
+import { OrderProvider } from './context/OrderContext'; // Add this import
 
 const theme = createTheme({
+  typography: {
+    fontFamily: 'Poppins, sans-serif',
+  },
   palette: {
     primary: {
       main: '#FF3A2F', 
@@ -20,29 +22,29 @@ const theme = createTheme({
     secondary: {
       main: '#0F172A', 
     },
-    typography: {
-      fontFamily: 'Poppins, sans-serif',
-    },
   },
 });
 
-
 const App = () => {
   return (
-  <ThemeProvider theme={theme}>
-    <BrowserRouter>
-      <Routes>
-          <Route path='/' element={<MainLayout/>}>
-            <Route index element={<LandingPage/>}/>
-            <Route path='/restaurant' element={<RestaurantPage/>}/>
-            <Route path='/special' element={<SpecialOfferPage/>}/>
-            <Route path='/track-order' element={<TrackOrderPage/>}/>
-            <Route path='/cart' element={<CartPage/>}/>
-            <Route path='/login-signup' element={<LoginSignUpPage/>}/>
-          </Route>
-      </Routes>
-    </BrowserRouter>
-  </ThemeProvider>
+    <ThemeProvider theme={theme}>
+      <BrowserRouter>
+        <OrderProvider> {/* Add OrderProvider here */}
+          <LocationPopup/>
+          <div className='bg-white'></div>
+          <Routes>
+            <Route path='/' element={<MainLayout/>}>
+              <Route index element={<LandingPage/>}/>
+              <Route path='/restaurant' element={<RestaurantPage/>}/>
+              <Route path='/special' element={<SpecialOfferPage/>}/>
+              <Route path="/track-order/:orderId" element={<TrackOrderPage />} />
+              <Route path="/no-active-orders" element={<NoActiveOrdersPage />} />
+              <Route path='/login-signup' element={<LoginSignUpPage/>}/>
+            </Route>
+          </Routes>
+        </OrderProvider> {/* Close OrderProvider */}
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
