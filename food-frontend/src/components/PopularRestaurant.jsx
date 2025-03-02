@@ -3,7 +3,7 @@
 const popularRestaurants = [
   {
     name: "McDonald's London",
-    logo: "/logos/mcdonalds.png",
+    logo: "../assets/McDonalds.png",
     bgColor: "bg-[#DA291C]"
   },
   {
