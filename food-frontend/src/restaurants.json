@@ -1,0 +1,57 @@
+[
+  {
+    "name": "McDonald's",
+    "logo": "/logos/mcdonalds.png",
+    "locations": [
+      "1177 Prospect St.",
+      "94 Main St."
+    ],
+    "hours": "24 Hours",
+    "bgColor": "bg-[#DA291C]"
+  },
+  {
+    "name": "Papa Johns",
+    "logo": "/logos/papa-johns.png",
+    "locations": [
+      ""
+    ],
+    "hours": "",
+    "bgColor": "bg-[#2D6737]"
+  },
+  {
+    "name": "KFC West London",
+    "logo": "/logos/kfc.png",
+    "locations": [
+      ""
+    ],
+    "hours": "",
+    "bgColor": "bg-[#E4002B]"
+  },
+  {
+    "name": "Texas Chicken",
+    "logo": "/logos/texas-chicken.png",
+    "locations": [
+      ""
+    ],
+    "hours": "",
+    "bgColor": "bg-white"
+  },
+  {
+    "name": "Burger King",
+    "logo": "/logos/burger-king.png",
+    "locations": [
+      ""
+    ],
+    "hours": "",
+    "bgColor": "bg-[#FF8732]"
+  },
+  {
+    "name": "Shaurma 1",
+    "logo": "/logos/shaurma.png",
+    "locations": [
+      ""
+    ],
+    "hours": "",
+    "bgColor": "bg-[#FF8732]"
+  }
+]
