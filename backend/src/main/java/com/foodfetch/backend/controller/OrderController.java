@@ -2,7 +2,7 @@ package com.foodfetch.backend.controller;
 
 import com.foodfetch.backend.dto.OrderRequestDTO;
 import com.foodfetch.backend.model.OrderEntity;
-import com.foodfetch.backend.service.OrderService;
+import com.foodfetch.backend.Service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
