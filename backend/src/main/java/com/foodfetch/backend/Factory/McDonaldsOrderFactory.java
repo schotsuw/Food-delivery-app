@@ -1,4 +1,4 @@
-package com.foodfetch.backend.factory;
+package com.foodfetch.backend.Factory;
 
 import com.foodfetch.backend.model.OrderEntity;
 import java.util.List;
