@@ -43,4 +43,8 @@ public class OrderService {
         OrderEntity orderEntity = factory.createOrder(restaurantId, amount, items);
         return orderRepository.save(orderEntity);
     }
+
+    public List<OrderEntity> getAllOrders() {
+        return orderRepository.findAll();
+    }
 }

@@ -6,6 +6,7 @@ import com.foodfetch.backend.Service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 @RestController
 @RequestMapping("/orders")
 public class OrderController {
@@ -19,5 +20,10 @@ public class OrderController {
     @PostMapping
     public OrderEntity createOrder(@RequestBody OrderRequestDTO request) {
         return orderService.createOrder(request.getRestaurant(), request.getAmount(), request.getItems());
+    }
+
+    @GetMapping
+    public List<OrderEntity> getAllOrders() {
+        return orderService.getAllOrders();
     }
 }
