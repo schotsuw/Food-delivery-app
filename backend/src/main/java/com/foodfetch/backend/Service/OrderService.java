@@ -3,6 +3,8 @@ package com.foodfetch.backend.Service;
 import com.foodfetch.backend.Factory.FactoryRegistry;
 import com.foodfetch.backend.Factory.OrderFactory;
 import com.foodfetch.backend.model.OrderEntity;
+import com.foodfetch.backend.model.OrderItem;
+import com.foodfetch.backend.model.OrderStatus;
 import com.foodfetch.backend.model.Restaurant;
 import com.foodfetch.backend.Repository.OrderRepository;
 import com.foodfetch.backend.Repository.RestaurantRepository;
@@ -25,7 +27,7 @@ public class OrderService {
         this.orderRepository = orderRepository;
     }
 
-    public OrderEntity createOrder(String restaurantName, double amount, List<String> items) {
+    public OrderEntity createOrder(String restaurantName, double amount, List<OrderItem> items) {
         Optional<Restaurant> restaurantOpt = restaurantRepository.findByName(restaurantName);
         if (restaurantOpt.isEmpty()) {
             throw new IllegalArgumentException("Restaurant not found: " + restaurantName);
@@ -34,7 +36,6 @@ public class OrderService {
         Restaurant restaurant = restaurantOpt.get();
         String restaurantId = restaurant.getId();
 
-        // Use factory to create an order
         OrderFactory factory = factoryRegistry.getFactory(restaurantName);
         if (factory == null) {
             throw new IllegalArgumentException("No factory found for restaurant: " + restaurantName);
@@ -42,5 +43,20 @@ public class OrderService {
 
         OrderEntity orderEntity = factory.createOrder(restaurantId, amount, items);
         return orderRepository.save(orderEntity);
+    }
+
+    public List<OrderEntity> getAllOrders() {
+        return orderRepository.findAll();
+    }
+
+    // Add these methods to your OrderService class
+
+    public OrderEntity getOrderById(String id) {
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found with id: " + id));
+    }
+
+    public List<OrderEntity> getActiveOrders() {
+        return orderRepository.findByStatusNotIn(List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED));
     }
 }
