@@ -4,6 +4,7 @@ import { createTheme } from '@mui/material';
 import { BrowserRouter, Routes, Route } from "react-router-dom"; // Make sure this is react-router-dom
 import MainLayout from './layouts/MainLayout';
 import RestaurantPage from './pages/RestaurantPage';
+import SingleRestaurantPage from './pages/SingleRestaurantPage';
 import TrackOrderPage from './pages/TrackOrderPage';
 import SpecialOfferPage from './pages/SpecialOfferPage';
 import LoginSignUpPage from './pages/LoginSignUpPage';
@@ -19,10 +20,10 @@ const theme = createTheme({
   },
   palette: {
     primary: {
-      main: '#FF3A2F', 
+      main: '#FF3A2F',
     },
     secondary: {
-      main: '#0F172A', 
+      main: '#0F172A',
     },
   },
 });

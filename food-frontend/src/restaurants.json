@@ -3,55 +3,98 @@
     "name": "McDonald's",
     "logo": "/logos/mcdonalds.png",
     "locations": [
-      "1177 Prospect St.",
-      "94 Main St."
+      {
+        "address": "1177 Prospect St.",
+        "hours": "24 Hours"
+      },
+      {
+        "address": "94 Main St.",
+        "hours": "24 Hours"
+      }
     ],
-    "hours": "24 Hours",
-    "bgColor": "bg-[#DA291C]"
+    "bgColor": "bg-red-500"
   },
   {
     "name": "Papa Johns",
-    "logo": "/logos/papa-johns.png",
+    "logo": "/logos/papajohns.png",
     "locations": [
-      ""
+      {
+        "address": "528 Smythe St.",
+        "hours": "10:30am - 11:00pm"
+      },
+      {
+        "address": "3, 269 Main St.",
+        "hours": "10:30am - 9:00pm"
+      }
     ],
-    "hours": "",
     "bgColor": "bg-[#2D6737]"
   },
   {
-    "name": "KFC West London",
+    "name": "KFC",
     "logo": "/logos/kfc.png",
     "locations": [
-      ""
+      {
+        "address": "439 Prospect St.",
+        "hours": "10:00am - 1:00am"
+      },
+      {
+        "address": "283 Main St.",
+        "hours": "10:30am - 12:00am"
+      },
+      {
+        "address": "1381 Regent St.",
+        "hours": "11:00am - 8:00pm"
+      }
     ],
-    "hours": "",
     "bgColor": "bg-[#E4002B]"
   },
   {
-    "name": "Texas Chicken",
-    "logo": "/logos/texas-chicken.png",
-    "locations": [
-      ""
-    ],
-    "hours": "",
-    "bgColor": "bg-white"
-  },
-  {
     "name": "Burger King",
-    "logo": "/logos/burger-king.png",
+    "logo": "/logos/burgerking.png",
     "locations": [
-      ""
+      {
+        "address": "1140 Smythe St.",
+        "hours": "24 Hours"
+      },
+      {
+        "address": "1735 Hanwell Rd.",
+        "hours": "7:00am - 11:00pm"
+      }
     ],
-    "hours": "",
     "bgColor": "bg-[#FF8732]"
   },
   {
-    "name": "Shaurma 1",
-    "logo": "/logos/shaurma.png",
+    "name": "Wendy's",
+    "logo": "/logos/wendys.png",
     "locations": [
-      ""
+      {
+        "address": "370 Main St.",
+        "hours": "7:00am - 12:00am"
+      },
+      {
+        "address": "967 Prospect St.",
+        "hours": "7:00am - 12:00am"
+      }
     ],
-    "hours": "",
-    "bgColor": "bg-[#FF8732]"
+    "bgColor": "bg-[#DD1438]"
+  },
+  {
+    "name": "Subway",
+    "logo": "/logos/subway.png",
+    "locations": [
+      {
+        "address": "1055 Prospect St.",
+        "hours": "7:00am - 2:00am"
+      },
+      {
+        "address": "349 King St.",
+        "hours": "8:00am - 11:00pm"
+      },
+      {
+        "address": "245 Bishop Dr.",
+        "hours": "7:00am - 10:00pm"
+      }
+    ],
+    "bgColor": "bg-[#009743]"
   }
 ]

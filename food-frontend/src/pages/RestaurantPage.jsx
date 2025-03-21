@@ -7,9 +7,7 @@ import RestaurantCards from '../components/RestaurantCards'
 const RestaurantPage = () => {
   return (
     <div>
-
       <RestaurantCards />
-
     </div>
   )
 }
