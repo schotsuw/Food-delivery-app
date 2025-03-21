@@ -1,10 +1,7 @@
 import { useState } from 'react';
-import { ShoppingCart, Person } from '@mui/icons-material';
+import { ShoppingCart, Person, AccountCircle, ExitToApp, Settings } from '@mui/icons-material';
 import { 
-    AppBar, 
-    Toolbar, 
-    Button, 
-    Badge,
+  AppBar, Toolbar, Button, Badge, Avatar, Menu, MenuItem, Divider, ListItemIcon, ListItemText
 } from '@mui/material';
 import { NavLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo2.png';
@@ -13,6 +10,7 @@ import { ButtonAnimate } from './ButtonUnique/ButtonAnimate';
 import { motion } from "framer-motion";
 import { CartButton } from './ButtonUnique/CartButton';
 import { useOrder } from '../context/OrderContext';
+import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
@@ -22,8 +20,13 @@ const Navbar = () => {
     { id: 3, name: 'Coca Cola', price: 1.99, quantity: 2 },
   ]);
   const { hasActiveOrders, currentOrderId } = useOrder();
+  const { currentUser, logout, isAuthenticated, getUserInitial } = useAuth(); // Access auth context
   const navigate = useNavigate();
 
+  // Add state for user menu
+  const [userMenuAnchor, setUserMenuAnchor] = useState(null);
+  const userMenuOpen = Boolean(userMenuAnchor);
+  
   const buttonToggleClass = ({ isActive }) =>
     isActive
       ? "!bg-red-500 !text-white !rounded-full !underline hover:bg-red-200 cursor-pointer"
@@ -58,6 +61,21 @@ const Navbar = () => {
       navigate('/no-active-orders');
     }
   };
+
+  const handleUserMenuOpen = (event) => {
+    setUserMenuAnchor(event.currentTarget);
+  };
+
+  const handleUserMenuClose = () => {
+    setUserMenuAnchor(null);
+  };
+
+  const handleLogout = () => {
+    logout();
+    handleUserMenuClose();
+    navigate('/');
+  };
+
 
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const totalPrice = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -128,11 +146,75 @@ const Navbar = () => {
               totalPrice={totalPrice}
               handleCartToggle={handleCartToggle}
             />
-            <NavLink to="/login-signup">
-              <ButtonAnimate startIcon={<Person />}>
-                Login-SignUp
-              </ButtonAnimate>
-            </NavLink>
+            {/* Conditional rendering based on authentication status */}
+            {isAuthenticated() ? (
+              <>
+                <motion.div 
+                  whileHover={{ scale: 1.05 }} 
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <Button
+                    onClick={handleUserMenuOpen}
+                    color="inherit"
+                    startIcon={
+                      <Avatar 
+                        sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}
+                      >
+                        {getUserInitial()}
+                      </Avatar>
+                    }
+                  >
+                    {currentUser?.name || 'User'}
+                  </Button>
+                </motion.div>
+            {/* User dropdown menu */}
+            <Menu
+                  anchorEl={userMenuAnchor}
+                  open={userMenuOpen}
+                  onClose={handleUserMenuClose}
+                  PaperProps={{
+                    elevation: 3,
+                    sx: { minWidth: '200px', borderRadius: '12px', mt: 1 }
+                  }}
+                >
+                  <MenuItem onClick={() => { handleUserMenuClose(); navigate('/profile'); }}>
+                    <ListItemIcon>
+                      <AccountCircle fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>My Profile</ListItemText>
+                  </MenuItem>
+                  
+                  <MenuItem onClick={() => { handleUserMenuClose(); navigate('/orders-history'); }}>
+                    <ListItemIcon>
+                      <ShoppingCart fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Order History</ListItemText>
+                  </MenuItem>
+                  
+                  <MenuItem onClick={() => { handleUserMenuClose(); navigate('/settings'); }}>
+                    <ListItemIcon>
+                      <Settings fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Settings</ListItemText>
+                  </MenuItem>
+                  
+                  <Divider />
+                  
+                  <MenuItem onClick={handleLogout}>
+                    <ListItemIcon>
+                      <ExitToApp fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText>Logout</ListItemText>
+                  </MenuItem>
+                </Menu>
+              </>
+            ) : (
+              <NavLink to="/login-signup">
+                <ButtonAnimate startIcon={<Person />}>
+                  Login-SignUp
+                </ButtonAnimate>
+              </NavLink>
+            )}
           </div>
         </Toolbar>
       </AppBar>

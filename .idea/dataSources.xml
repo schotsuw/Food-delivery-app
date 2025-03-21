@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="mongodb-food-deli-v3" uuid="59648023-1017-4b5b-a519-3cf4ca413672">
+    <data-source source="LOCAL" name="mongodb-foodfetch" uuid="66b9fab1-9096-4dcf-8fed-db1dd78dd76d">
       <driver-ref>mongo.4</driver-ref>
       <synchronize>true</synchronize>
       <imported>true</imported>
       <jdbc-driver>com.dbschema.MongoJdbcDriver</jdbc-driver>
-      <jdbc-url>mongodb+srv://cluster0.kz8z0.mongodb.net/?retryWrites=true&amp;w=majority&amp;appName=Cluster0</jdbc-url>
+      <jdbc-url>mongodb+srv://cluster0.kz8z0.mongodb.net/foodfetch?retryWrites=true&amp;w=majority&amp;appName=Cluster0</jdbc-url>
       <jdbc-additional-properties>
         <property name="com.intellij.clouds.kubernetes.db.host.port" />
         <property name="com.intellij.clouds.kubernetes.db.enabled" value="false" />
