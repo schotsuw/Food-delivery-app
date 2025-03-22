@@ -10,7 +10,7 @@ import SpecialOfferPage from './pages/SpecialOfferPage';
 import LoginSignUpPage from './pages/LoginSignUpPage';
 import LocationPopup from './Popup/LocationPopup';
 import NoActiveOrdersPage from './pages/NoActiveOrdersPage';
-import { OrderProvider } from './context/OrderContext'; 
+import { OrderProvider } from './context/OrderContext';
 import ProtectedRoute from './route/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext'; // Add this import
 
@@ -31,20 +31,21 @@ const theme = createTheme({
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <AuthProvider> 
+      <AuthProvider>
         <BrowserRouter>
           <OrderProvider>
-            <LocationPopup/>
+            <LocationPopup />
             <div className='bg-white'></div>
             <Routes>
-              <Route path='/' element={<MainLayout/>}>
-                <Route index element={<LandingPage/>}/>
-                <Route path='/restaurant' element={<RestaurantPage/>}/>
-                <Route path='/special' element={<SpecialOfferPage/>}/>
+              <Route path='/' element={<MainLayout />}>
+                <Route index element={<LandingPage />} />
+                <Route path='/restaurant' element={<RestaurantPage />} />
+                <Route path='/restaurant/:restaurantSlug' element={<SingleRestaurantPage />} />
+                <Route path='/special' element={<SpecialOfferPage />} />
                 <Route path="/track-order/:orderId" element={<TrackOrderPage />} />
                 <Route path="/no-active-orders" element={<NoActiveOrdersPage />} />
-                <Route path='/login-signup' element={<LoginSignUpPage/>}/>
-                
+                <Route path='/login-signup' element={<LoginSignUpPage />} />
+
                 {/* Protected routes */}
                 <Route path="/profile" element={
                   <ProtectedRoute>
