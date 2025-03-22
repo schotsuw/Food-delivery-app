@@ -1,1 +1,6 @@
-!/.idea/
+# Ignore everything in .idea
+.idea/
+
+# But keep these specific files
+!.idea/codeStyles/
+!.idea/inspectionProfiles/
