@@ -2,8 +2,10 @@
 <project version="4">
   <component name="ExternalStorageConfigurationManager" enabled="true" />
   <component name="FrameworkDetectionExcludesConfiguration">
+    <file type="web" url="file://$PROJECT_DIR$/apiGateway" />
     <file type="web" url="file://$PROJECT_DIR$/notificationService" />
     <file type="web" url="file://$PROJECT_DIR$/orderService" />
+    <file type="web" url="file://$PROJECT_DIR$/paymentService" />
     <file type="web" url="file://$PROJECT_DIR$/trackingService" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="temurin-21" project-jdk-type="JavaSDK">
