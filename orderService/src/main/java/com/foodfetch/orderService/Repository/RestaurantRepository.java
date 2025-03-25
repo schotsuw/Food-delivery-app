@@ -7,5 +7,5 @@ import java.util.Optional;
 
 @Repository
 public interface RestaurantRepository extends MongoRepository<Restaurant, String> {
-    Optional<Restaurant> findByName(String name);
+    Optional<Restaurant> findFirstByName(String name);
 }

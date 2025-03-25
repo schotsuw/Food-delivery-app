@@ -8,6 +8,6 @@ public class DeliveryDetails {
     private String deliveryId;
     private String driverId;
     private String deliveryAddress;
-    private Location currentLocation;
     private LocalDateTime estimatedDeliveryTime;
+    private double deliveryFee;
 }

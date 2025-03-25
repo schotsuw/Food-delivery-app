@@ -10,14 +10,7 @@ import java.util.List;
 public class OrderRequestDTO {
     private String restaurantName;
     @Getter
-    private double amount;
-    @Getter
     private List<OrderItem> items;
     private String paymentMethod;
     private String deliveryAddress;
-
-    public String getRestaurant() {
-        return restaurantName;
-    }
-
 }
