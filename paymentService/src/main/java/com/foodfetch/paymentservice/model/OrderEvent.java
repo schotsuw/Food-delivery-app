@@ -1,4 +1,25 @@
 package com.foodfetch.paymentservice.model;
 
-public class OrderEvent {
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class OrderEvent implements Serializable {
+    private Long orderId;
+    private String orderStatus;
+    private Double totalAmount;
+    private String eventType;
+    private Long customerId;
+    private Long restaurantId;
+    private String paymentMethod;
+
+    // Common event types as constants
+    public static final String ORDER_CREATED = "ORDER_CREATED";
+    public static final String ORDER_UPDATED = "ORDER_UPDATED";
+    public static final String ORDER_CANCELLED = "ORDER_CANCELLED";
 }

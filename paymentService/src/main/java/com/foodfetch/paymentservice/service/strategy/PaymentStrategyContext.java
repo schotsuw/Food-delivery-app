@@ -1,10 +1,12 @@
-package com.foodfetch.paymentservice.service;
+package com.foodfetch.paymentservice.service.strategy;
 
 import com.foodfetch.paymentservice.model.Payment;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class PaymentStrategyContext {
     private final Map<String, PaymentStrategy> strategies;
 

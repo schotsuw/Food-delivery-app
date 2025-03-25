@@ -1,7 +1,9 @@
-package com.foodfetch.paymentservice.service;
+package com.foodfetch.paymentservice.service.handler;
 
 import com.foodfetch.paymentservice.model.Payment;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PaymentProcessor {
     private final PaymentHandler chain;
 

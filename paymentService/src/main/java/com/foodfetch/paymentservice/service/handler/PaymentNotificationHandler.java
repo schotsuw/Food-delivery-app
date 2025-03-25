@@ -1,10 +1,12 @@
-package com.foodfetch.paymentservice.service;
+package com.foodfetch.paymentservice.service.handler;
 
 import com.foodfetch.paymentservice.messaging.RabbitMQSender;
 import com.foodfetch.paymentservice.model.Payment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
+@Component
 public class PaymentNotificationHandler implements PaymentHandler {
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentNotificationHandler.class);
     private PaymentHandler nextHandler;

@@ -1,4 +1,4 @@
-package com.foodfetch.paymentservice.service;
+package com.foodfetch.paymentservice.service.strategy;
 
 import com.foodfetch.paymentservice.model.Payment;
 import org.slf4j.Logger;
@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CreditCardPaymentStrategy implements PaymentStrategy{
+public class CreditCardPaymentStrategy implements PaymentStrategy {
     private static final Logger LOGGER = LoggerFactory.getLogger(CreditCardPaymentStrategy.class);
 
     @Override

@@ -1,4 +1,4 @@
-package com.foodfetch.paymentservice.service;
+package com.foodfetch.paymentservice.service.handler;
 
 import com.foodfetch.paymentservice.model.Payment;
 
