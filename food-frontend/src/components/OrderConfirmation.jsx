@@ -22,7 +22,7 @@ const OrderConfirmation = ({ open, onClose, order, clearCart, onTrackOrder }) =>
 
     if (!order) return null;
 
-    // Generate a random order ID if not provided
+    // Get orderId from order.orderId or order.id, whichever is available
     const orderId = order.orderId || order.id || `ORD-${Math.floor(Math.random() * 10000)}`;
 
     // Generate estimated delivery time (30-45 minutes from now)
@@ -46,6 +46,14 @@ const OrderConfirmation = ({ open, onClose, order, clearCart, onTrackOrder }) =>
         clearCart();
         navigate('/');
     };
+
+    // Safety check for required properties
+    const restaurantName = order.restaurantName || "Restaurant";
+    const email = order.customerEmail || order.email || "your email";
+    const subtotal = typeof order.subtotal === 'number' ? order.subtotal : 0;
+    const tax = typeof order.tax === 'number' ? order.tax : 0;
+    const deliveryFee = typeof order.deliveryFee === 'number' ? order.deliveryFee : 2.99;
+    const total = typeof order.total === 'number' ? order.total : (subtotal + tax + deliveryFee);
 
     return (
         <Dialog
@@ -86,7 +94,7 @@ const OrderConfirmation = ({ open, onClose, order, clearCart, onTrackOrder }) =>
                                 Restaurant
                             </Typography>
                             <Typography variant="body1" fontWeight="bold">
-                                {order.restaurantName || "Restaurant"}
+                                {restaurantName}
                             </Typography>
                         </Box>
                         <Box display="flex" flexDirection="column" alignItems="center">
@@ -106,7 +114,7 @@ const OrderConfirmation = ({ open, onClose, order, clearCart, onTrackOrder }) =>
                 </Typography>
 
                 <List>
-                    {order.items.map((item, index) => (
+                    {order.items && order.items.map((item, index) => (
                         <ListItem key={index} divider>
                             <ListItemText
                                 primary={
@@ -131,26 +139,26 @@ const OrderConfirmation = ({ open, onClose, order, clearCart, onTrackOrder }) =>
                     <Divider />
                     <Box display="flex" justifyContent="space-between" mt={2}>
                         <Typography variant="subtitle1">Subtotal</Typography>
-                        <Typography variant="subtitle1">${order.subtotal ? order.subtotal.toFixed(2) : order.total.toFixed(2)}</Typography>
+                        <Typography variant="subtitle1">${subtotal.toFixed(2)}</Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between" mt={1}>
                         <Typography variant="subtitle1">Delivery Fee</Typography>
-                        <Typography variant="subtitle1">${order.deliveryFee ? order.deliveryFee.toFixed(2) : "2.99"}</Typography>
+                        <Typography variant="subtitle1">${deliveryFee.toFixed(2)}</Typography>
                     </Box>
                     <Box display="flex" justifyContent="space-between" mt={1} mb={2}>
                         <Typography variant="subtitle1">Tax</Typography>
-                        <Typography variant="subtitle1">${order.tax ? order.tax.toFixed(2) : (order.total * 0.08).toFixed(2)}</Typography>
+                        <Typography variant="subtitle1">${tax.toFixed(2)}</Typography>
                     </Box>
                     <Divider />
                     <Box display="flex" justifyContent="space-between" mt={2}>
                         <Typography variant="h6">Total</Typography>
-                        <Typography variant="h6" fontWeight="bold">${order.total.toFixed(2)}</Typography>
+                        <Typography variant="h6" fontWeight="bold">${total.toFixed(2)}</Typography>
                     </Box>
                 </Box>
 
                 <Box mt={3} p={2} sx={{ backgroundColor: 'grey.100', borderRadius: 1 }}>
                     <Typography variant="body2">
-                        We'll send updates about your order to <strong>{order.email || order.customerEmail || "your email"}</strong>.
+                        We'll send updates about your order to <strong>{email}</strong>.
                         You can also track your order status in real-time.
                     </Typography>
                 </Box>

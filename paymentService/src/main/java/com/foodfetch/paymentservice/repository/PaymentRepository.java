@@ -9,7 +9,8 @@ import java.util.List;
 
 @Repository
 public interface PaymentRepository extends JpaRepository<Payment, Long> {
-    List<Payment> findByOrderId(Long orderId);
+    // Update to use String for orderId
+    List<Payment> findByOrderId(String orderId);
     List<Payment> findByStatus(PaymentStatus status);
     Payment findByTransactionId(String transactionId);
 }

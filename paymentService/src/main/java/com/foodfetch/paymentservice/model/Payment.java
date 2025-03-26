@@ -17,7 +17,8 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long orderId;
+    // Change from Long to String for MongoDB compatibility
+    private String orderId;
     private Double amount;
 
     @Enumerated(EnumType.STRING)
@@ -26,5 +27,4 @@ public class Payment {
     private String paymentMethod;
     private String transactionId;
     private LocalDateTime created;
-
 }

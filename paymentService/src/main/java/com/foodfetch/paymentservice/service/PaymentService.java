@@ -50,7 +50,7 @@ public class PaymentService {
 
         // Create a new payment record
         Payment payment = new Payment();
-        payment.setOrderId(orderEvent.getOrderId());
+        payment.setOrderId(orderEvent.getOrderId()); // This is now a String
         payment.setAmount(orderEvent.getTotalAmount());
         payment.setStatus(PaymentStatus.PENDING);
         payment.setCreated(LocalDateTime.now());
@@ -87,7 +87,7 @@ public class PaymentService {
         // Send payment event
         PaymentEvent paymentEvent = new PaymentEvent();
         paymentEvent.setPaymentId(payment.getId());
-        paymentEvent.setOrderId(payment.getOrderId());
+        paymentEvent.setOrderId(payment.getOrderId()); // This is now a String
         paymentEvent.setStatus(payment.getStatus());
         paymentEvent.setAmount(payment.getAmount());
         paymentEvent.setTransactionId(payment.getTransactionId());
@@ -122,7 +122,7 @@ public class PaymentService {
 
         // Create a refund record
         Payment refund = new Payment();
-        refund.setOrderId(orderEvent.getOrderId());
+        refund.setOrderId(orderEvent.getOrderId()); // This is now a String
         refund.setAmount(originalPayment.getAmount());
         refund.setStatus(PaymentStatus.PENDING);
         refund.setPaymentMethod(originalPayment.getPaymentMethod());
@@ -149,7 +149,7 @@ public class PaymentService {
         // Send payment event
         PaymentEvent paymentEvent = new PaymentEvent();
         paymentEvent.setPaymentId(refund.getId());
-        paymentEvent.setOrderId(refund.getOrderId());
+        paymentEvent.setOrderId(refund.getOrderId()); // This is now a String
         paymentEvent.setStatus(refund.getStatus());
         paymentEvent.setAmount(refund.getAmount());
         paymentEvent.setTransactionId(refund.getTransactionId());

@@ -25,7 +25,7 @@ public class PaymentValidationHandler implements PaymentHandler {
             throw new IllegalArgumentException("Payment amount must be greater than zero");
         }
 
-        if (payment.getOrderId() == null) {
+        if (payment.getOrderId() == null || payment.getOrderId().trim().isEmpty()) {
             LOGGER.error("Missing order ID for payment");
             throw new IllegalArgumentException("Order ID is required");
         }

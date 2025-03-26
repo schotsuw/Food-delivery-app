@@ -70,7 +70,7 @@ public class RabbitMQOrderSender {
         event.setOrderId(order.getId());
         event.setOrderStatus(order.getStatus());
         event.setRestaurantId(order.getRestaurantId());
-        event.setAmount(order.getAmount());
+        event.setTotalAmount(order.getAmount());
         event.setTimestamp(LocalDateTime.now());
         event.setEventType(OrderEvent.ORDER_CREATED);
 
@@ -93,7 +93,7 @@ public class RabbitMQOrderSender {
         event.setOrderId(order.getId());
         event.setOrderStatus(order.getStatus());
         event.setRestaurantId(order.getRestaurantId());
-        event.setAmount(order.getAmount());
+        event.setTotalAmount(order.getAmount());
         event.setTimestamp(LocalDateTime.now());
         event.setEventType(OrderEvent.ORDER_CANCELLED);
 

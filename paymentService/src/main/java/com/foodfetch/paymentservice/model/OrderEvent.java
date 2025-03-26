@@ -10,12 +10,12 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderEvent implements Serializable {
-    private Long orderId;
+    private String orderId;
     private String orderStatus;
     private Double totalAmount;
     private String eventType;
     private Long customerId;
-    private Long restaurantId;
+    private String restaurantId;
     private String paymentMethod;
 
     // Common event types as constants

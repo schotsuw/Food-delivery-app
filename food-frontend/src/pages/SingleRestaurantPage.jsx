@@ -223,6 +223,7 @@ const SingleRestaurantPage = () => {
             <RestaurantMenu
                 menuItems={menuItems}
                 onAddToCart={handleAddToCart}
+                restaurant={restaurant}  // Add this line
             />
         </Container>
     );

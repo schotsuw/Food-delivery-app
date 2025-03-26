@@ -61,7 +61,7 @@ const TrackOrderPage = () => {
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true });
 
-  // Fetch order details when component mounts
+  // In TrackOrderPage.jsx, update the useEffect that fetches order details
   useEffect(() => {
     const fetchOrderDetails = async () => {
       setLoading(true);
@@ -69,21 +69,56 @@ const TrackOrderPage = () => {
         // First try to get the order from our context
         let order = getOrder(orderId);
 
-        // If not found, try to track it (which might create a mock order for demo)
+        // If not found, try to track it
         if (!order && trackOrder) {
           order = await trackOrder(orderId);
         }
 
         if (order) {
-          setOrderDetails(order);
-          // Update lastStatus based on the fetched order
-          const activeStepValue = order.steps ?
-              order.steps.findIndex(step => !step.completed) - 1 : -1;
-          setLastStatus(activeStepValue);
+          // Transform backend order format to frontend format if needed
+          const formattedOrder = {
+            ...order,
+            // Ensure all required props exist for the UI
+            orderId: order.id || order.orderId,
+            steps: order.steps || [
+              {
+                label: "Order Confirmed",
+                description: "Your order has been received",
+                time: new Date(order.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}),
+                completed: order.status === 'CONFIRMED' || order.status === 'PREPARING' ||
+                    order.status === 'OUT_FOR_DELIVERY' || order.status === 'DELIVERED'
+              },
+              {
+                label: "Preparing",
+                description: "Restaurant is preparing your food",
+                time: "",
+                completed: order.status === 'PREPARING' ||
+                    order.status === 'OUT_FOR_DELIVERY' || order.status === 'DELIVERED'
+              },
+              {
+                label: "On the Way",
+                description: "Your order is on the way",
+                time: "",
+                completed: order.status === 'OUT_FOR_DELIVERY' || order.status === 'DELIVERED'
+              },
+              {
+                label: "Delivered",
+                description: "Enjoy your meal!",
+                time: "",
+                completed: order.status === 'DELIVERED'
+              }
+            ],
+            rider: order.rider || {
+              name: "John Doe",
+              image: "/placeholder-rider.jpg",
+              rating: 4.8
+            }
+          };
+
+          setOrderDetails(formattedOrder);
           setError(null);
         } else {
           setError("Order not found");
-          // Optional: set a timeout to redirect after showing error
           setTimeout(() => navigate('/no-active-orders'), 3000);
         }
       } catch (err) {
@@ -483,7 +518,9 @@ const TrackOrderPage = () => {
                   <Divider sx={{ my: 2 }} />
                   <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                     <Typography variant={subtitleVariant} fontWeight="bold">Total</Typography>
-                    <Typography variant={subtitleVariant} fontWeight="bold">${orderDetails.total.toFixed(2)}</Typography>
+                    <Typography variant={subtitleVariant} fontWeight="bold">
+                      ${(orderDetails.total || orderDetails.amount || 0).toFixed(2)}
+                    </Typography>
                   </Box>
                 </Box>
 

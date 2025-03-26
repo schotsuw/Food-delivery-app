@@ -47,7 +47,7 @@ function TabPanel(props) {
     );
 }
 
-const RestaurantMenu = ({ menuItems }) => {
+const RestaurantMenu = ({ menuItems, restaurant }) => {
     const [tabValue, setTabValue] = useState(0);
     const [searchQuery, setSearchQuery] = useState('');
     const [favorites, setFavorites] = useState([]);
@@ -241,6 +241,7 @@ const RestaurantMenu = ({ menuItems }) => {
                                         item={item}
                                         isFavorite={favorites.includes(item.id)}
                                         onToggleFavorite={toggleFavorite}
+                                        restaurant={restaurant}  // Add this line
                                     />
                                 </Grid>
                             ))}

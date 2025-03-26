@@ -74,6 +74,7 @@ const PaymentDialog = ({ open, onClose, total, cartItems }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // In PaymentDialog.jsx, modify the handleSubmit function
   const handleSubmit = async () => {
     if (!validateForm()) return;
 
@@ -86,24 +87,36 @@ const PaymentDialog = ({ open, onClose, total, cartItems }) => {
       const deliveryFee = 2.99;
       const orderTotal = total + tax + deliveryFee;
 
-      // Get restaurant name from the first item
-      const restaurantName = cartItems[0]?.restaurantName || 'Restaurant';
+      // Get restaurant name from the first item - important!
+      const restaurantItem = cartItems[0];
+      if (!restaurantItem || !restaurantItem.restaurantName) {
+        setErrorMessage('Could not determine restaurant. Please try again.');
+        setLoading(false);
+        return;
+      }
 
-      // Prepare order data
+      const restaurantName = restaurantItem.restaurantName; // Don't use fallback value
+
+      // Format for backend DTO
       const orderData = {
-        items: cartItems,
+        restaurantName: restaurantName,
+        items: cartItems.map(item => ({
+          itemId: item.id,
+          name: item.name,
+          price: item.price,
+          quantity: item.quantity || 1
+        })),
+        paymentMethod: "CREDIT_CARD",
+        deliveryAddress: paymentInfo.address,
+        email: paymentInfo.email,  // Add this line to include the email
         subtotal: total,
         tax: tax,
         deliveryFee: deliveryFee,
-        total: orderTotal,
-        status: 'CONFIRMED',
-        paymentMethod: 'CREDIT_CARD',
-        deliveryAddress: paymentInfo.address,
-        customerEmail: paymentInfo.email,
-        restaurantName: restaurantName,
-        // We'd normally get this from the restaurant data
-        estimatedDeliveryTime: new Date(Date.now() + 45 * 60000).toISOString()
+        total: orderTotal
       };
+
+      // Log to see what we're sending
+      console.log("Sending order with restaurant:", restaurantName);
 
       // Create the order using our order service
       const createdOrder = await createOrder(orderData);
@@ -111,13 +124,15 @@ const PaymentDialog = ({ open, onClose, total, cartItems }) => {
       // Set the created order
       setOrder(createdOrder);
       setOrderCompleted(true);
-
-      // We'll handle navigation in the order confirmation component
-      // No need to call confirmPayment here
-
     } catch (error) {
       console.error('Error processing payment:', error);
-      setErrorMessage('Failed to process payment. Please try again.');
+
+      // Add more specific error handling
+      if (error.response && error.response.data) {
+        setErrorMessage(`Failed to process payment: ${error.response.data.message || 'Server error'}`);
+      } else {
+        setErrorMessage('Failed to process payment. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -130,11 +145,20 @@ const PaymentDialog = ({ open, onClose, total, cartItems }) => {
   };
 
   const handleTrackOrder = () => {
-    if (order && order.orderId) {
-      setOrderCompleted(false);
-      onClose();
-      clearCart();
-      navigate(`/track-order/${order.orderId}`);
+    if (order) {
+      const orderId = order.orderId || order.id;
+      if (orderId) {
+        setOrderCompleted(false);
+        onClose();
+        clearCart();
+
+        // Make sure the order is marked as confirmed before navigating
+        if (confirmPayment) {
+          confirmPayment(orderId);
+        } else {
+          navigate(`/track-order/${orderId}`);
+        }
+      }
     }
   };
 

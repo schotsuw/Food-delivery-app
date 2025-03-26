@@ -18,7 +18,7 @@ public class OrderEventConsumer {
         this.paymentService = paymentService;
     }
 
-    @RabbitListener(queues = "${rabbitmq.queue.order.name}")
+    @RabbitListener(queues = "${rabbitmq.queue.payment.name}")
     public void consumeOrderEvent(OrderEvent orderEvent) {
         LOGGER.info("Order event received -> {}", orderEvent);
 
