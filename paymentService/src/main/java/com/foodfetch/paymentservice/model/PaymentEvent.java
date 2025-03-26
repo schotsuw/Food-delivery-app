@@ -12,7 +12,8 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class PaymentEvent implements Serializable {
     private Long paymentId;
-    private Long orderId;
+    // Change from Long to String for MongoDB compatibility
+    private String orderId;
     private PaymentStatus status;
     private Double amount;
     private String transactionId;

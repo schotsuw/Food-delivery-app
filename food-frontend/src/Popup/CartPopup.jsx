@@ -1,5 +1,6 @@
 // src/Popup/CartPopup.jsx
 import { useState } from "react";
+import { useNavigate} from "react-router-dom";
 import {
   Drawer,
   Typography,
@@ -19,7 +20,7 @@ import { useCart } from "../context/CartContext";
 
 const CartPopup = ({ open, onClose }) => {
   const [openPayment, setOpenPayment] = useState(false);
-
+    const navigate = useNavigate();
   // Use cart context
   const { cartItems, updateQuantity, totalPrice, clearCart } = useCart();
 
@@ -51,9 +52,14 @@ const CartPopup = ({ open, onClose }) => {
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 3 }}>
                     Add items from the menu to get started
                   </Typography>
-                  <Button variant="outlined" onClick={onClose}>
-                    Browse Menu
-                  </Button>
+                    <Button
+                        variant="outlined"
+                        onClick={() => {
+                            onClose();
+                            navigate('/restaurant'); // Navigate to the restaurant listing page
+                        }}>
+                        Browse Restaunts
+                    </Button>
                 </Box>
             ) : (
                 <>

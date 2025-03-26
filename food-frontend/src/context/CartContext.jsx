@@ -29,15 +29,27 @@ export const CartProvider = ({ children }) => {
     }, [cartItems]);
 
     // Add item to cart
+    // In CartContext.jsx
     const addToCart = (item) => {
+        console.log('Adding to cart in context:', item.name);
+
         setCartItems(prevItems => {
+            // Defensive check - stop if the item is malformed
+            if (!item || !item.id) {
+                console.error('Attempted to add invalid item to cart', item);
+                return prevItems;
+            }
+
             // Check if item already exists in cart
             const existingItemIndex = prevItems.findIndex(cartItem => cartItem.id === item.id);
 
             if (existingItemIndex >= 0) {
                 // Item exists, increase quantity
                 const updatedItems = [...prevItems];
-                updatedItems[existingItemIndex].quantity += 1;
+                updatedItems[existingItemIndex] = {
+                    ...updatedItems[existingItemIndex],
+                    quantity: updatedItems[existingItemIndex].quantity + 1
+                };
                 return updatedItems;
             } else {
                 // Item doesn't exist, add to cart with quantity 1

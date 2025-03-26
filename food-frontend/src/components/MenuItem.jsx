@@ -20,20 +20,49 @@ import {
 } from '@mui/icons-material';
 import { useCart } from '../context/CartContext';
 
-const MenuItem = ({ item, isFavorite, onToggleFavorite }) => {
+// In MenuItem.jsx
+const MenuItem = ({ item, isFavorite, restaurant, onToggleFavorite }) => {
     // Use cart context
     const { addToCart } = useCart();
     const [snackbarOpen, setSnackbarOpen] = React.useState(false);
+    // Add a ref to track if we've just added the item
+    const addedRef = React.useRef(false);
 
     // Determine if item should show special indicators
     const isSpicy = item.isSpicy || item.name.toLowerCase().includes('spicy');
     const isPopular = item.isPopular || (item.rating && item.rating > 4.5);
 
-    // Handler for add to cart
-    const handleAddToCart = () => {
-        addToCart(item);
+    const handleAddToCart = React.useCallback((e) => {
+        // Stop event propagation
+        if (e) e.stopPropagation();
+
+        // Prevent double execution
+        if (addedRef.current) return;
+
+        // Ensure there's a valid restaurant name before adding to cart
+        const restaurantName = item.restaurantName || restaurant?.name;
+        if (!restaurantName) {
+            console.error("Cannot add item to cart: No restaurant name available");
+            return;
+        }
+
+        addedRef.current = true;
+        setTimeout(() => {
+            addedRef.current = false;
+        }, 500); // Reset after 500ms
+
+        console.log('Adding to cart:', item.name);
+
+        // Make sure restaurant info is included
+        const cartItem = {
+            ...item,
+            restaurantName: restaurantName // Use the validated restaurant name
+        };
+        addToCart(cartItem);
         setSnackbarOpen(true);
-    };
+    }, [item, restaurant, addToCart]);
+
+    // Rest of your component remains the same...
 
     // Handler for closing snackbar
     const handleCloseSnackbar = (event, reason) => {
@@ -59,7 +88,7 @@ const MenuItem = ({ item, isFavorite, onToggleFavorite }) => {
 
                         {/* Favorite button */}
                         <IconButton
-                            className="absolute top-2 right-2 bg-white/70 hover:bg-white"
+                            className="absolute top-2 left-1 right-1 bg-white/70 hover:bg-white"
                             size="small"
                             onClick={() => onToggleFavorite(item.id)}
                             aria-label={isFavorite ? "Remove from favorites" : "Add to favorites"}
