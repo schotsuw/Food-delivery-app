@@ -1,6 +1,7 @@
 package com.foodfetch.orderService.messaging;
 
 import com.foodfetch.orderService.model.OrderEntity;
+import com.foodfetch.orderService.model.OrderStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -23,6 +24,9 @@ public class RabbitMQOrderSender {
 
     @Value("${rabbitmq.routing.key.payment}")
     private String paymentRoutingKey;
+
+    @Value("${rabbitmq.routing.key.notification}")
+    private String notificationRoutingKey;
 
     public RabbitMQOrderSender(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
@@ -99,5 +103,49 @@ public class RabbitMQOrderSender {
 
         // Send to payment queue
         rabbitTemplate.convertAndSend(exchange, paymentRoutingKey, event);
+    }
+
+    /**
+     * Sends a notification event based on order status changes
+     */
+    public void sendNotificationEvent(OrderEntity order) {
+        logger.info("Sending notification event for order: {}", order.getId());
+
+        OrderEvent event = new OrderEvent();
+        event.setOrderId(order.getId());
+        event.setOrderStatus(order.getStatus());
+        event.setRestaurantId(order.getRestaurantId());
+        event.setCustomerId(order.getCustomerId());
+        event.setAmount(order.getAmount());
+        event.setTimestamp(LocalDateTime.now());
+
+        // Map the order status to appropriate notification type
+        String notificationType = mapToNotificationType(order.getStatus());
+        event.setEventType(notificationType);
+
+        // Send to notification queue
+        rabbitTemplate.convertAndSend(exchange, notificationRoutingKey, event);
+    }
+
+    /**
+     * Maps OrderStatus to notification event type
+     */
+    // Since we're assuming payments always succeed in this implementation,
+// we map both CREATED and CONFIRMED statuses to the same notification
+// to avoid sending users multiple notifications in rapid succession
+    private String mapToNotificationType(OrderStatus status) {
+        switch (status) {
+            case CREATED:
+            case CONFIRMED:
+                return "order-confirmed";
+            case PREPARING:
+                return "order-preparation";
+            case IN_TRANSIT:
+                return "delivery-update";
+            case DELIVERED:
+                return "order-arrival";
+            default:
+                return "order-status-update";
+        }
     }
 }

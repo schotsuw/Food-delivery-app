@@ -81,6 +81,9 @@ public class OrderService {
             // Publish order created event to message queue
             messageSender.sendOrderStatusChangeEvent(orderEntity);
 
+            // Send notification for order creation
+            messageSender.sendNotificationEvent(orderEntity);
+
             // Send payment processing event if needed
             if (orderEntity.getStatus() == OrderStatus.CONFIRMED) {
                 messageSender.sendPaymentProcessingEvent(orderEntity);
@@ -140,6 +143,9 @@ public class OrderService {
         // Publish order status update event
         messageSender.sendOrderStatusChangeEvent(order);
 
+        // Now also send notification event
+        messageSender.sendNotificationEvent(order);
+
         return order;
     }
 
@@ -162,6 +168,9 @@ public class OrderService {
 
         // Publish order cancelled event
         messageSender.sendOrderStatusChangeEvent(order);
+
+        // Send notification for order cancellation
+        messageSender.sendNotificationEvent(order);
 
         // If payment was processed, send refund event
         if (order.getPaymentDetails() != null &&
