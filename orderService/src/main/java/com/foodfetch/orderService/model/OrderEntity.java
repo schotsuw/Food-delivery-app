@@ -6,8 +6,13 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * OrderEntity is a class that represents an order in the system.
+ * It contains information about the order ID, customer ID, restaurant ID, list of items,
+ * order status, total amount, payment details, delivery details, and timestamps for creation and update.
+ */
 @Data
-@Document(collection = "orders")
+@Document(collection = "orders") // MongoDB collection name
 public class OrderEntity {
     @Id
     private String id;
@@ -15,15 +20,22 @@ public class OrderEntity {
     private String restaurantId;
     private List<OrderItem> items;
     private OrderStatus status;
-    private double amount;
+    private double totalAmount;
     private PaymentDetails paymentDetails;
     private DeliveryDetails deliveryDetails;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
-    public OrderEntity(String restaurantId, double amount, List<OrderItem> items) {
+    /**
+     * Constructor to create an OrderEntity with the specified restaurant ID, total amount, and list of items.
+     *
+     * @param restaurantId the ID of the restaurant
+     * @param totalAmount  the total amount of the order
+     * @param items        the list of items in the order
+     */
+    public OrderEntity(String restaurantId, double totalAmount, List<OrderItem> items) {
         this.restaurantId = restaurantId;
-        this.amount = amount;
+        this.totalAmount = totalAmount;
         this.items = items;
         this.status = OrderStatus.CREATED;
         this.createdAt = LocalDateTime.now();

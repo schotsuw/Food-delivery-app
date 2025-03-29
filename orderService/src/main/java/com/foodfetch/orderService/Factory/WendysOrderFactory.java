@@ -8,11 +8,25 @@ import com.foodfetch.orderService.model.OrderStatus;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * WendysOrderFactory is a concrete implementation of the OrderFactory interface.
+ * It creates orders specifically for Wendy's restaurant, applying specific rules and validations.
+ */
 public class WendysOrderFactory implements OrderFactory {
 
+    // Constants for Wendy's specific order processing
     private static final double MIN_ORDER_VALUE = 7.0;
+    // Standard preparation time for Wendy's orders in minutes
     private static final int STANDARD_PREP_TIME_MINUTES = 15;
 
+    /**
+     * Creates an order for Wendy's with specific validation and processing.
+     *
+     * @param restaurantId The ID of the restaurant
+     * @param amount       The total amount of the order
+     * @param items        The list of items in the order
+     * @return A new OrderEntity object representing the order
+     */
     @Override
     public OrderEntity createOrder(String restaurantId, double amount, List<OrderItem> items) {
         // Wendy's specific validation

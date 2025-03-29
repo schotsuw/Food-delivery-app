@@ -19,6 +19,9 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+/**
+ * OrderController handles HTTP requests related to order operations.
+ */
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
@@ -26,11 +29,22 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    /**
+     * Constructor for OrderController
+     *
+     * @param orderService Service to handle order-related operations
+     */
     @Autowired
     public OrderController(OrderService orderService) {
         this.orderService = orderService;
     }
 
+    /**
+     * Endpoint to create a new order
+     *
+     * @param request OrderRequestDTO containing order details
+     * @return Created OrderEntity
+     */
     @PostMapping
     public ResponseEntity<OrderEntity> createOrder(@RequestBody OrderRequestDTO request) {
         try {
@@ -49,6 +63,15 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint to retrieve all orders with pagination and sorting
+     *
+     * @param page Page number
+     * @param size Number of items per page
+     * @param sortBy Field to sort by
+     * @param sortDir Sort direction (asc or desc)
+     * @return Page of OrderEntity
+     */
     @GetMapping
     public ResponseEntity<Page<OrderEntity>> getAllOrders(
             @RequestParam(defaultValue = "0") int page,
@@ -68,6 +91,12 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint to retrieve an order by its ID
+     *
+     * @param orderId ID of the order
+     * @return OrderEntity with the specified ID
+     */
     @GetMapping("/{orderId}")
     public ResponseEntity<OrderEntity> getOrderById(@PathVariable String orderId) {
         try {
@@ -78,6 +107,13 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint to update the status of an order
+     *
+     * @param orderId ID of the order
+     * @param statusUpdate OrderStatusUpdateDTO containing the new status
+     * @return Updated OrderEntity
+     */
     @PutMapping("/{orderId}/status")
     public ResponseEntity<OrderEntity> updateOrderStatus(
             @PathVariable String orderId,
@@ -97,6 +133,12 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint to cancel an order
+     *
+     * @param orderId ID of the order
+     * @return Cancelled OrderEntity
+     */
     @PostMapping("/{orderId}/cancel")
     public ResponseEntity<OrderEntity> cancelOrder(@PathVariable String orderId) {
         try {
@@ -112,6 +154,11 @@ public class OrderController {
         }
     }
 
+    /**
+     * Endpoint to retrieve all active orders
+     *
+     * @return List of active OrderEntity
+     */
     @GetMapping("/active")
     public ResponseEntity<List<OrderEntity>> getActiveOrders() {
         try {

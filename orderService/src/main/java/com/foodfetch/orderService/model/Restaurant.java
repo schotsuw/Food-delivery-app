@@ -4,8 +4,12 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+/**
+ * Restaurant represents a restaurant in the system.
+ * It contains the necessary information about the restaurant.
+ */
 @Data
-@Document(collection = "restaurants")
+@Document(collection = "restaurants") // MongoDB collection name
 public class Restaurant {
     @Id
     private String id;
