@@ -14,33 +14,30 @@ import java.util.List;
 import java.util.UUID;
 
 /**
- * PaymentService is a service class that provides methods to manage payments.
- * It delegates to specialized services for specific responsibilities:
- * - PaymentGatewayService for payment gateway interactions
- * - PaymentEventService for event publishing
- * - PaymentRepository for database operations
- * It handles payment processing, refunds, and retrieval of payment records.
+ * PaymentService.java
+ * This class handles payment processing, including initial payments and refunds.
+ * It uses the PaymentRepository to interact with the database and the PaymentGatewayService to process payments.
  */
 @Service
 public class PaymentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
 
-    // PaymentRepository instance to handle payment-related database operations
+    // Repository to handle payment operations
     private final PaymentRepository paymentRepository;
 
-    // PaymentEventService instance to handle payment events
+    // Service to handle payment events
     private final PaymentEventService paymentEventService;
 
-    // PaymentGatewayService instance to handle payment gateway interactions
+    // Service to handle payment gateway operations
     private final PaymentGatewayService paymentGatewayService;
 
     /**
      * Constructor for PaymentService
      *
-     * @param paymentRepository      Repository to handle payment operations
-     * @param paymentEventService    Service to handle payment events
-     * @param paymentGatewayService  Service to handle payment gateway interactions
+     * @param paymentRepository Repository to handle payment operations
+     * @param paymentEventService Service to handle payment events
+     * @param paymentGatewayService Service to handle payment gateway operations
      */
     public PaymentService(
             PaymentRepository paymentRepository,
@@ -52,7 +49,8 @@ public class PaymentService {
     }
 
     /**
-     * Process initial payment for an order
+     * Processes the initial payment for an order.
+     * This method validates the order event, creates a payment record, and processes the payment through the gateway service.
      *
      * @param orderEvent The order event containing payment details
      * @return The processed payment
@@ -64,15 +62,24 @@ public class PaymentService {
         // Validate order event
         validateOrderEvent(orderEvent);
 
-        // Create and save initial payment record
+        // Create initial payment record (but don't save yet)
         Payment payment = createPaymentFromOrderEvent(orderEvent);
-        payment = paymentRepository.save(payment);
+
+        // Check for existing transaction ID before processing
+        if (paymentRepository.findByTransactionId(payment.getTransactionId()) != null) {
+            LOGGER.warn("Duplicate transaction detected, generating new transaction ID");
+            // Generate a new transaction ID
+            payment.setTransactionId(UUID.randomUUID().toString());
+        }
 
         // Process the payment through gateway service
         boolean paymentSuccessful = paymentGatewayService.processPayment(payment);
 
         // Update payment status based on result
-        updatePaymentStatus(payment, paymentSuccessful);
+        payment.setStatus(paymentSuccessful ? PaymentStatus.COMPLETED : PaymentStatus.FAILED);
+
+        // Save payment after processing
+        payment = paymentRepository.save(payment);
 
         // Publish appropriate payment event
         paymentEventService.publishPaymentStatusEvent(payment);
@@ -81,10 +88,11 @@ public class PaymentService {
     }
 
     /**
-     * Process refund for an order
+     * Processes a refund for an order.
+     * This method finds the original payment, creates a refund record, and processes the refund through the gateway service.
      *
      * @param orderEvent The order event containing refund details
-     * @return The processed refund payment
+     * @return The processed refund
      */
     @Transactional
     public Payment processRefund(OrderEvent orderEvent) {
@@ -97,8 +105,17 @@ public class PaymentService {
             return null;
         }
 
-        // Create and save refund record
+        // Create refund record
         Payment refund = createRefundFromOriginalPayment(originalPayment);
+
+        // Check for existing transaction ID before processing
+        if (paymentRepository.findByTransactionId(refund.getTransactionId()) != null) {
+            LOGGER.warn("Duplicate refund transaction detected, generating new transaction ID");
+            // Generate a new transaction ID
+            refund.setTransactionId("REFUND-" + UUID.randomUUID().toString());
+        }
+
+        // Save refund record
         refund = paymentRepository.save(refund);
 
         // Process the refund through gateway service
@@ -114,41 +131,39 @@ public class PaymentService {
     }
 
     /**
-     * Get payment by ID
+     * Retrieves a payment by its ID.
      *
-     * @param id The payment ID
-     * @return The payment, or null if not found
+     * @param id The ID of the payment
+     * @return The payment object, or null if not found
      */
     public Payment getPaymentById(Long id) {
         return paymentRepository.findById(id).orElse(null);
     }
 
     /**
-     * Get payment by transaction ID
+     * Retrieves a payment by its transaction ID.
      *
-     * @param transactionId The transaction ID
-     * @return The payment, or null if not found
+     * @param transactionId The transaction ID of the payment
+     * @return The payment object, or null if not found
      */
     public Payment getPaymentByTransactionId(String transactionId) {
         return paymentRepository.findByTransactionId(transactionId);
     }
 
     /**
-     * Get all payments
+     * Retrieves all payments.
      *
-     * @return List of all payments
+     * @return A list of all payments
      */
     public List<Payment> getAllPayments() {
         return paymentRepository.findAll();
     }
 
-    // Private helper methods
-
     /**
-     * Validate order event for payment processing
+     * Retrieves all payments for a specific order ID.
      *
-     * @param orderEvent The order event to validate
-     * @throws IllegalArgumentException if validation fails
+     * @param orderEvent The order ID of the payments
+     * @return A list of payments for the specified order ID
      */
     private void validateOrderEvent(OrderEvent orderEvent) {
         if (orderEvent.getTotalAmount() <= 0) {
@@ -161,14 +176,12 @@ public class PaymentService {
     }
 
     /**
-     * Create a payment object from an order event
+     * Creates a new payment record from the order event.
      *
      * @param orderEvent The order event containing payment details
      * @return The created payment object
      */
     private Payment createPaymentFromOrderEvent(OrderEvent orderEvent) {
-
-        // Create a new payment object
         Payment payment = new Payment();
         payment.setOrderId(orderEvent.getOrderId());
         payment.setAmount(orderEvent.getTotalAmount());
@@ -191,24 +204,23 @@ public class PaymentService {
     }
 
     /**
-     * Update payment status based on payment result
+     * Updates the payment status based on the result of the payment processing.
      *
-     * @param payment The payment to update
-     * @param successful Whether the payment was successful
-     * @return The updated payment
+     * @param payment The payment object to update
+     * @param successful Indicates whether the payment was successful
+     * @return The updated payment object
      */
     private Payment updatePaymentStatus(Payment payment, boolean successful) {
-        // Update payment status based on success or failure
         LOGGER.info("Updating payment status: {}", payment.getPaymentMethod());
         payment.setStatus(successful ? PaymentStatus.COMPLETED : PaymentStatus.FAILED);
         return paymentRepository.save(payment);
     }
 
     /**
-     * Find a completed payment for an order
+     * Finds a completed payment for a specific order ID.
      *
-     * @param orderId The order ID
-     * @return The completed payment, or null if not found
+     * @param orderId The order ID to search for
+     * @return The completed payment object, or null if not found
      */
     private Payment findCompletedPaymentForOrder(String orderId) {
         LOGGER.info("Finding completed payment for order: {}", orderId);
@@ -220,13 +232,12 @@ public class PaymentService {
     }
 
     /**
-     * Create a refund payment based on an original payment
+     * Creates a refund record from the original payment.
      *
-     * @param originalPayment The original payment
-     * @return The created refund payment
+     * @param originalPayment The original payment to create a refund from
+     * @return The created refund object
      */
     private Payment createRefundFromOriginalPayment(Payment originalPayment) {
-        // Create a new refund payment object
         Payment refund = new Payment();
         refund.setOrderId(originalPayment.getOrderId());
         refund.setAmount(originalPayment.getAmount());
@@ -238,14 +249,13 @@ public class PaymentService {
     }
 
     /**
-     * Update refund and original payment status based on refund result
+     * Updates the refund status based on the result of the refund processing.
      *
-     * @param refund The refund payment to update
-     * @param originalPayment The original payment to update
-     * @param successful Whether the refund was successful
+     * @param refund The refund object to update
+     * @param originalPayment The original payment associated with the refund
+     * @param successful Indicates whether the refund was successful
      */
     private void updateRefundStatus(Payment refund, Payment originalPayment, boolean successful) {
-        // Update refund status based on success or failure
         if (successful) {
             LOGGER.info("Updating refund status: {}", refund.getPaymentMethod());
             refund.setStatus(PaymentStatus.REFUNDED);

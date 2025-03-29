@@ -5,6 +5,7 @@ import com.foodfetch.paymentservice.model.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -19,4 +20,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Long> {
     List<Payment> findByStatus(PaymentStatus status);
     // Update to use String for transactionId
     Payment findByTransactionId(String transactionId);
+
+    // count payments by payment method and created date
+    int countByPaymentMethodAndCreatedAfter(String paymentMethod, LocalDateTime dateTime);
 }

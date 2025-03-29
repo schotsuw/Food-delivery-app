@@ -23,6 +23,7 @@ public class PaymentProcessor {
      * @param notificationHandler The last handler in the chain for sending notifications
      */
     public PaymentProcessor(
+            TransactionSecurityHandler transactionSecurityHandler,
             PaymentValidationHandler validationHandler,
             PaymentGatewayHandler gatewayHandler,
             PaymentDatabaseHandler databaseHandler,
@@ -32,6 +33,7 @@ public class PaymentProcessor {
         chain = validationHandler;
 
         // Set up the chain of responsibility
+        transactionSecurityHandler.setNext(validationHandler);
         validationHandler.setNext(gatewayHandler);
         gatewayHandler.setNext(databaseHandler);
         databaseHandler.setNext(notificationHandler);
