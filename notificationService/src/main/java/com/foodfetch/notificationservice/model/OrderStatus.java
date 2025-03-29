@@ -1,4 +1,4 @@
-package com.foodfetch.orderService.model;
+package com.foodfetch.notificationservice.model;
 
 /*
  * OrderStatus.java

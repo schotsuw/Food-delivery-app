@@ -10,6 +10,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.amqp.core.Queue;
 
+/**
+ * RabbitMQConfig is responsible for configuring RabbitMQ components such as queues, exchanges, and bindings.
+ * It uses Spring's AMQP library to facilitate message communication between microservices.
+ */
 @Configuration
 public class RabbitMQConfig {
 
@@ -46,7 +50,10 @@ public class RabbitMQConfig {
         return new TopicExchange(exchange);
     }
 
-    // Binding between order queue and exchange
+    /*
+     * Binding between order queue and exchange
+     * This binding allows messages sent to the order queue to be routed to the exchange
+     */
     @Bean
     public Binding orderBinding() {
         return BindingBuilder
@@ -55,7 +62,10 @@ public class RabbitMQConfig {
                 .with(orderRoutingKey);
     }
 
-    // Binding between payment queue and exchange
+    /*
+     * Binding between payment queue and exchange
+     * This binding allows messages sent to the payment queue to be routed to the exchange
+     */
     @Bean
     public Binding paymentBinding() {
         return BindingBuilder
@@ -64,13 +74,18 @@ public class RabbitMQConfig {
                 .with(paymentRoutingKey);
     }
 
-    // Message converter
+    /*
+     * Message converter for converting messages to and from JSON format
+     */
     @Bean
     public MessageConverter converter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    // Configure RabbitTemplate
+    /*
+     * RabbitTemplate is used to send messages to RabbitMQ.
+     * It uses the connection factory and message converter defined above.
+     */
     @Bean
     public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);

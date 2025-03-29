@@ -9,29 +9,60 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/*
+When an order is created, updated, or cancelled in OrderService, the service uses RabbitMQOrderSender to:
+
+Create an OrderEvent object with the relevant information
+Send that event to the appropriate queue using the RabbitTemplate
+Other services (Payment, Notification) listen to these queues and react accordingly
+
+For example, when a new order is created:
+
+OrderService publishes an ORDER_CREATED event
+The Payment Service picks this up from the payment queue and processes payment
+The Notification Service picks it up from the notification queue and sends a confirmation to the customer
+This is a simplified overview of how RabbitMQ can be used in a microservices architecture to facilitate communication between services.
+ */
+
 @Configuration
 public class RabbitMQConfig {
 
+    // Configuration values for RabbitMQ queues and exchanges
     @Value("${rabbitmq.queue.order.name}")
     private String orderQueue;
 
+    // Payment queue for payment events
     @Value("${rabbitmq.queue.payment.name}")
     private String paymentQueue;
 
+    // Notification queue for notification events
     @Value("${rabbitmq.queue.notification.name}")
     private String notificationQueue;
 
+    // Tracking queue for tracking events
+    @Value("${rabbitmq.queue.tracking.name}")
+    private String trackingQueue;
+
+    // Exchange name for RabbitMQ
     @Value("${rabbitmq.exchange.name}")
     private String exchange;
 
+    // Routing keys for different events
     @Value("${rabbitmq.routing.key.order}")
     private String orderRoutingKey;
 
+    // Routing key for payment events
     @Value("${rabbitmq.routing.key.payment}")
     private String paymentRoutingKey;
 
+    // Routing key for notification events
     @Value("${rabbitmq.routing.key.notification}")
     private String notificationRoutingKey;
+
+    // Routing key for tracking events
+    @Value("${rabbitmq.routing.key.tracking}")
+    private String trackingRoutingKey;
+
 
     // Order queue for order events
     @Bean
@@ -51,7 +82,7 @@ public class RabbitMQConfig {
         return new Queue(notificationQueue);
     }
 
-    // Topic exchange
+    // Topic exchange: An exchange receives messages from producers and routes them to queues.
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(exchange);
@@ -84,13 +115,13 @@ public class RabbitMQConfig {
                 .with(notificationRoutingKey);
     }
 
-    // Message converter
+    // Message converter: convert Java objects to JSON (serialization) and vice versa (deserialization)
     @Bean
     public MessageConverter converter() {
         return new Jackson2JsonMessageConverter();
     }
 
-    // Configure RabbitTemplate
+    // Configure RabbitTemplate: what an application uses to send messages to RabbitMQ
     @Bean
     public AmqpTemplate amqpTemplate(ConnectionFactory connectionFactory) {
         RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);

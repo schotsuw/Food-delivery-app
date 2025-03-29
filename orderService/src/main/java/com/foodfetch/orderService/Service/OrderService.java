@@ -23,6 +23,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * OrderService is a service class that provides methods to manage orders.
+ * It uses OrderRepository and RestaurantRepository to perform CRUD operations on orders and restaurants.
+ */
 @Service
 public class OrderService {
     private static final Logger logger = LoggerFactory.getLogger(OrderService.class);
@@ -30,8 +34,18 @@ public class OrderService {
     private final FactoryRegistry factoryRegistry;
     private final RestaurantRepository restaurantRepository;
     private final OrderRepository orderRepository;
+
+    // RabbitMQ message sender for order status changes and notifications
     private final RabbitMQOrderSender messageSender;
 
+    /**
+     * Constructor for OrderService
+     *
+     * @param factoryRegistry        FactoryRegistry to get the appropriate order factory
+     * @param restaurantRepository   Repository to handle restaurant operations
+     * @param orderRepository        Repository to handle order operations
+     * @param messageSender          Message sender for RabbitMQ
+     */
     @Autowired
     public OrderService(FactoryRegistry factoryRegistry,
                         RestaurantRepository restaurantRepository,
@@ -43,6 +57,13 @@ public class OrderService {
         this.messageSender = messageSender;
     }
 
+    /**
+     * Creates a new order for a specific restaurant.
+     *
+     * @param restaurantName Name of the restaurant
+     * @param items          List of order items
+     * @return Created OrderEntity
+     */
     @Transactional
     public OrderEntity createOrder(String restaurantName, List<OrderItem> items) {
         // Calculate the total amount from items
@@ -54,10 +75,11 @@ public class OrderService {
             throw new IllegalArgumentException("Restaurant name cannot be empty");
         }
 
-        if (items == null || items.isEmpty()) {
+        if (items.isEmpty()) {
             throw new IllegalArgumentException("Order must contain at least one item");
         }
 
+        // Check if restaurant exists
         Optional<Restaurant> restaurantOpt = restaurantRepository.findFirstByName(restaurantName);
         if (restaurantOpt.isEmpty()) {
             logger.error("Restaurant not found: {}", restaurantName);
@@ -67,14 +89,15 @@ public class OrderService {
         Restaurant restaurant = restaurantOpt.get();
         String restaurantId = restaurant.getId();
 
+        // Get the appropriate factory for the restaurant
         OrderFactory factory = factoryRegistry.getFactory(restaurantName);
         if (factory == null) {
             logger.error("No factory found for restaurant: {}", restaurantName);
             throw new IllegalArgumentException("No factory found for restaurant: " + restaurantName);
         }
 
+        // Create order using the factory
         try {
-            // Use calculatedAmount instead of amount
             OrderEntity orderEntity = factory.createOrder(restaurantId, calculatedAmount, items);
             orderEntity = orderRepository.save(orderEntity);
 
@@ -85,7 +108,7 @@ public class OrderService {
             messageSender.sendNotificationEvent(orderEntity);
 
             // Send payment processing event if needed
-            if (orderEntity.getStatus() == OrderStatus.CONFIRMED) {
+            if (orderEntity.getStatus() == OrderStatus.CREATED) {
                 messageSender.sendPaymentProcessingEvent(orderEntity);
             }
 
@@ -96,11 +119,24 @@ public class OrderService {
         }
     }
 
+    /**
+     * Retrieves all orders with pagination.
+     *
+     * @param pageable Pagination information
+     * @return Page of OrderEntity
+     */
     @Transactional(readOnly = true)
     public Page<OrderEntity> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable);
     }
 
+
+    /**
+     * Retrieves an order by its ID.
+     *
+     * @param id ID of the order
+     * @return OrderEntity with the specified ID
+     */
     @Transactional(readOnly = true)
     public OrderEntity getOrderById(String id) {
         if (id == null || id.trim().isEmpty()) {
@@ -111,11 +147,23 @@ public class OrderService {
                 .orElseThrow(() -> new OrderNotFoundException("Order not found with id: " + id));
     }
 
+    /**
+     * Retrieves all active orders (not delivered or cancelled).
+     *
+     * @return List of active OrderEntity
+     */
     @Transactional(readOnly = true)
     public List<OrderEntity> getActiveOrders() {
         return orderRepository.findByStatusNotIn(List.of(OrderStatus.DELIVERED, OrderStatus.CANCELLED));
     }
 
+    /**
+     * Updates the status of an order.
+     *
+     * @param orderId   ID of the order
+     * @param newStatus New status to set
+     * @return Updated OrderEntity
+     */
     @Transactional
     public OrderEntity updateOrderStatus(String orderId, OrderStatus newStatus) {
         logger.info("Updating order {} status to {}", orderId, newStatus);
@@ -182,7 +230,12 @@ public class OrderService {
         return order;
     }
 
-    // Helper method to validate status transitions
+    /**
+     * Validates the status transition based on business rules.
+     *
+     * @param currentStatus Current status of the order
+     * @param newStatus     New status to set
+     */
     private void validateStatusTransition(OrderStatus currentStatus, OrderStatus newStatus) {
         // Implement business rules for valid status transitions
         if (currentStatus == OrderStatus.DELIVERED || currentStatus == OrderStatus.CANCELLED) {
@@ -190,15 +243,21 @@ public class OrderService {
                     "Cannot change status of an order that is already " + currentStatus);
         }
 
-        // Add more transition rules as needed
-        // For example: CREATED -> CONFIRMED -> PREPARING -> READY_FOR_PICKUP -> IN_TRANSIT -> DELIVERED
+        // transition rules
+        // CREATED -> CONFIRMED -> PREPARING -> READY_FOR_PICKUP -> IN_TRANSIT -> DELIVERED
 
-        // For now, just a basic validation
         if (currentStatus.ordinal() > newStatus.ordinal()) {
             throw new IllegalStateException(
                     "Cannot change order status from " + currentStatus + " to " + newStatus);
         }
     }
+
+    /**
+     * Calculates the total amount of the order based on items and their quantities.
+     *
+     * @param items List of order items
+     * @return Total amount of the order
+     */
     private double calculateOrderTotal(List<OrderItem> items) {
         return items.stream()
                 .mapToDouble(item -> item.getPrice() * item.getQuantity())

@@ -10,12 +10,19 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 
+/**
+ * RabbitMQOrderSender is responsible for sending order-related events to RabbitMQ.
+ * It handles events such as order status changes, payment processing, and notifications.
+ */
 @Service
 public class RabbitMQOrderSender {
+
     private static final Logger logger = LoggerFactory.getLogger(RabbitMQOrderSender.class);
 
+    // RabbitTemplate is used to send messages to RabbitMQ
     private final RabbitTemplate rabbitTemplate;
 
+    // Configuration values for RabbitMQ
     @Value("${rabbitmq.exchange.name}")
     private String exchange;
 
@@ -28,27 +35,42 @@ public class RabbitMQOrderSender {
     @Value("${rabbitmq.routing.key.notification}")
     private String notificationRoutingKey;
 
+    @Value("${rabbitmq.routing.key.tracking}")
+    private String trackingRoutingKey;
+
+    /**
+     * Constructor for RabbitMQOrderSender
+     *
+     * @param rabbitTemplate RabbitTemplate to send messages
+     */
     public RabbitMQOrderSender(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
     /**
-     * Sends an order event when an order status changes
+     * Sends an order status change event to RabbitMQ
+     *
+     * @param order The order entity containing order details
      */
     public void sendOrderStatusChangeEvent(OrderEntity order) {
+        // Log the order status change event
         logger.info("Sending order status change event for order: {}", order.getId());
 
+        // Create an OrderEvent object to encapsulate order details
         OrderEvent event = new OrderEvent();
         event.setOrderId(order.getId());
         event.setOrderStatus(order.getStatus());
         event.setRestaurantId(order.getRestaurantId());
-        event.setAmount(order.getAmount());
+        event.setTotalAmount(order.getTotalAmount());
         event.setTimestamp(LocalDateTime.now());
 
         // Set event type based on order status
         switch (order.getStatus()) {
             case CREATED:
                 event.setEventType(OrderEvent.ORDER_CREATED);
+                break;
+            case CONFIRMED:
+                event.setEventType(OrderEvent.ORDER_CONFIRMED);
                 break;
             case CANCELLED:
                 event.setEventType(OrderEvent.ORDER_CANCELLED);
@@ -65,16 +87,19 @@ public class RabbitMQOrderSender {
     }
 
     /**
-     * Sends a payment request event when an order is confirmed
+     * Sends a payment processing event when an order is confirmed
+     *
+     * @param order The order entity containing order details
      */
     public void sendPaymentProcessingEvent(OrderEntity order) {
         logger.info("Sending payment processing event for order: {}", order.getId());
 
+        // Create an OrderEvent object to encapsulate order details
         OrderEvent event = new OrderEvent();
         event.setOrderId(order.getId());
         event.setOrderStatus(order.getStatus());
         event.setRestaurantId(order.getRestaurantId());
-        event.setTotalAmount(order.getAmount());
+        event.setTotalAmount(order.getTotalAmount());
         event.setTimestamp(LocalDateTime.now());
         event.setEventType(OrderEvent.ORDER_CREATED);
 
@@ -89,15 +114,18 @@ public class RabbitMQOrderSender {
 
     /**
      * Sends a payment refund event when an order is cancelled
+     *
+     * @param order The order entity containing order details
      */
     public void sendPaymentRefundEvent(OrderEntity order) {
         logger.info("Sending payment refund event for order: {}", order.getId());
 
+        // Create an OrderEvent object to encapsulate order details
         OrderEvent event = new OrderEvent();
         event.setOrderId(order.getId());
         event.setOrderStatus(order.getStatus());
         event.setRestaurantId(order.getRestaurantId());
-        event.setTotalAmount(order.getAmount());
+        event.setTotalAmount(order.getTotalAmount());
         event.setTimestamp(LocalDateTime.now());
         event.setEventType(OrderEvent.ORDER_CANCELLED);
 
@@ -106,17 +134,20 @@ public class RabbitMQOrderSender {
     }
 
     /**
-     * Sends a notification event based on order status changes
+     * Sends a notification event when an order is confirmed or updated
+     *
+     * @param order The order entity containing order details
      */
     public void sendNotificationEvent(OrderEntity order) {
         logger.info("Sending notification event for order: {}", order.getId());
 
+        // Create an OrderEvent object to encapsulate order details
         OrderEvent event = new OrderEvent();
         event.setOrderId(order.getId());
         event.setOrderStatus(order.getStatus());
         event.setRestaurantId(order.getRestaurantId());
         event.setCustomerId(order.getCustomerId());
-        event.setAmount(order.getAmount());
+        event.setTotalAmount(order.getTotalAmount());
         event.setTimestamp(LocalDateTime.now());
 
         // Map the order status to appropriate notification type
@@ -128,16 +159,18 @@ public class RabbitMQOrderSender {
     }
 
     /**
-     * Maps OrderStatus to notification event type
+     * Maps order status to notification type
+     *
+     * @param status The order status
+     * @return The corresponding notification type
      */
-    // Since we're assuming payments always succeed in this implementation,
-// we map both CREATED and CONFIRMED statuses to the same notification
-// to avoid sending users multiple notifications in rapid succession
+
     private String mapToNotificationType(OrderStatus status) {
         switch (status) {
             case CREATED:
+                return "order-created";
             case CONFIRMED:
-                return "order-confirmed";
+                return "order-confirmed"; // always assume that the payment is successful
             case PREPARING:
                 return "order-preparation";
             case IN_TRANSIT:

@@ -2,7 +2,10 @@ package com.foodfetch.notificationservice.factories;
 
 import com.foodfetch.notificationservice.notifications.*;
 
-// Order Preparation Factory
+/**
+ * OrderPreparationFactory is a concrete implementation of the NotificationFactory interface.
+ * It creates instances of OrderPreparationNotification.
+ */
 public class OrderPreparationFactory implements NotificationFactory {
   @Override
   public Notification createNotification() {
