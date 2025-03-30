@@ -1,13 +1,9 @@
 package com.foodfetch.paymentservice.service;
 
-import com.foodfetch.paymentservice.messaging.RabbitMQSender;
-import com.foodfetch.paymentservice.model.OrderEvent;
+import com.foodfetch.paymentservice.messaging.OrderEvent;
 import com.foodfetch.paymentservice.model.Payment;
-import com.foodfetch.paymentservice.model.PaymentEvent;
 import com.foodfetch.paymentservice.model.PaymentStatus;
 import com.foodfetch.paymentservice.repository.PaymentRepository;
-import com.foodfetch.paymentservice.service.handler.PaymentProcessor;
-import com.foodfetch.paymentservice.service.strategy.PaymentStrategyContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -17,29 +13,144 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * PaymentService is a service class that provides methods to manage payments.
+ * It delegates to specialized services for specific responsibilities:
+ * - PaymentGatewayService for payment gateway interactions
+ * - PaymentEventService for event publishing
+ * - PaymentRepository for database operations
+ * It handles payment processing, refunds, and retrieval of payment records.
+ */
 @Service
 public class PaymentService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentService.class);
 
+    // PaymentRepository instance to handle payment-related database operations
     private final PaymentRepository paymentRepository;
-    private final RabbitMQSender rabbitMQSender;
 
-    private final PaymentStrategyContext strategyContext;
-    private final PaymentProcessor paymentProcessor;
+    // PaymentEventService instance to handle payment events
+    private final PaymentEventService paymentEventService;
 
-    public PaymentService(PaymentRepository paymentRepository, RabbitMQSender rabbitMQSender, PaymentStrategyContext strategyContext, PaymentProcessor paymentProcessor) {
+    // PaymentGatewayService instance to handle payment gateway interactions
+    private final PaymentGatewayService paymentGatewayService;
+
+    /**
+     * Constructor for PaymentService
+     *
+     * @param paymentRepository      Repository to handle payment operations
+     * @param paymentEventService    Service to handle payment events
+     * @param paymentGatewayService  Service to handle payment gateway interactions
+     */
+    public PaymentService(
+            PaymentRepository paymentRepository,
+            PaymentEventService paymentEventService,
+            PaymentGatewayService paymentGatewayService) {
         this.paymentRepository = paymentRepository;
-        this.rabbitMQSender = rabbitMQSender;
-        this.strategyContext = strategyContext;
-        this.paymentProcessor = paymentProcessor;
+        this.paymentEventService = paymentEventService;
+        this.paymentGatewayService = paymentGatewayService;
     }
 
+    /**
+     * Process initial payment for an order
+     *
+     * @param orderEvent The order event containing payment details
+     * @return The processed payment
+     */
     @Transactional
     public Payment processInitialPayment(OrderEvent orderEvent) {
         LOGGER.info("Processing payment for order: {}", orderEvent.getOrderId());
 
-        // Validate order event first (before creating payment)
+        // Validate order event
+        validateOrderEvent(orderEvent);
+
+        // Create and save initial payment record
+        Payment payment = createPaymentFromOrderEvent(orderEvent);
+        payment = paymentRepository.save(payment);
+
+        // Process the payment through gateway service
+        boolean paymentSuccessful = paymentGatewayService.processPayment(payment);
+
+        // Update payment status based on result
+        updatePaymentStatus(payment, paymentSuccessful);
+
+        // Publish appropriate payment event
+        paymentEventService.publishPaymentStatusEvent(payment);
+
+        return payment;
+    }
+
+    /**
+     * Process refund for an order
+     *
+     * @param orderEvent The order event containing refund details
+     * @return The processed refund payment
+     */
+    @Transactional
+    public Payment processRefund(OrderEvent orderEvent) {
+        LOGGER.info("Processing refund for order: {}", orderEvent.getOrderId());
+
+        // Find the original payment
+        Payment originalPayment = findCompletedPaymentForOrder(orderEvent.getOrderId());
+        if (originalPayment == null) {
+            LOGGER.error("No completed payment found for order: {}", orderEvent.getOrderId());
+            return null;
+        }
+
+        // Create and save refund record
+        Payment refund = createRefundFromOriginalPayment(originalPayment);
+        refund = paymentRepository.save(refund);
+
+        // Process the refund through gateway service
+        boolean refundSuccessful = paymentGatewayService.processRefund(refund, originalPayment);
+
+        // Update refund and original payment status based on result
+        updateRefundStatus(refund, originalPayment, refundSuccessful);
+
+        // Publish appropriate payment event
+        paymentEventService.publishPaymentStatusEvent(refund);
+
+        return refund;
+    }
+
+    /**
+     * Get payment by ID
+     *
+     * @param id The payment ID
+     * @return The payment, or null if not found
+     */
+    public Payment getPaymentById(Long id) {
+        return paymentRepository.findById(id).orElse(null);
+    }
+
+    /**
+     * Get payment by transaction ID
+     *
+     * @param transactionId The transaction ID
+     * @return The payment, or null if not found
+     */
+    public Payment getPaymentByTransactionId(String transactionId) {
+        return paymentRepository.findByTransactionId(transactionId);
+    }
+
+    /**
+     * Get all payments
+     *
+     * @return List of all payments
+     */
+    public List<Payment> getAllPayments() {
+        return paymentRepository.findAll();
+    }
+
+    // Private helper methods
+
+    /**
+     * Validate order event for payment processing
+     *
+     * @param orderEvent The order event to validate
+     * @throws IllegalArgumentException if validation fails
+     */
+    private void validateOrderEvent(OrderEvent orderEvent) {
         if (orderEvent.getTotalAmount() <= 0) {
             throw new IllegalArgumentException("Payment amount must be greater than zero");
         }
@@ -47,154 +158,102 @@ public class PaymentService {
         if (orderEvent.getOrderId() == null) {
             throw new IllegalArgumentException("Order ID is required");
         }
+    }
 
-        // Create a new payment record
+    /**
+     * Create a payment object from an order event
+     *
+     * @param orderEvent The order event containing payment details
+     * @return The created payment object
+     */
+    private Payment createPaymentFromOrderEvent(OrderEvent orderEvent) {
+
+        // Create a new payment object
         Payment payment = new Payment();
         payment.setOrderId(orderEvent.getOrderId());
         payment.setAmount(orderEvent.getTotalAmount());
         payment.setStatus(PaymentStatus.PENDING);
         payment.setCreated(LocalDateTime.now());
 
-        // In a real system, you would integrate with a payment gateway here
-        // For this example, we'll simulate a successful payment
-
-        // Generate a transaction ID (in real system, this would come from payment gateway)
+        // Generate a transaction ID
         String transactionId = UUID.randomUUID().toString();
         payment.setTransactionId(transactionId);
 
         // Set payment method from the order event, or use default if not provided
         String paymentMethod = orderEvent.getPaymentMethod();
         if (paymentMethod == null || paymentMethod.trim().isEmpty()) {
+            LOGGER.warn("Payment method not specified, using default: CREDIT_CARD");
             paymentMethod = "CREDIT_CARD"; // Default only if not specified
         }
         payment.setPaymentMethod(paymentMethod);
 
-        // Save payment record
-        payment = paymentRepository.save(payment);
-
-        // Process the payment through gateway (this will use BOTH patterns)
-        boolean paymentSuccessful = processPaymentWithGateway(payment);
-
-        if (paymentSuccessful) {
-            payment.setStatus(PaymentStatus.COMPLETED);
-        } else {
-            payment.setStatus(PaymentStatus.FAILED);
-        }
-
-        // Update payment record
-        payment = paymentRepository.save(payment);
-
-        // Send payment event
-        PaymentEvent paymentEvent = new PaymentEvent();
-        paymentEvent.setPaymentId(payment.getId());
-        paymentEvent.setOrderId(payment.getOrderId());
-        paymentEvent.setStatus(payment.getStatus());
-        paymentEvent.setAmount(payment.getAmount());
-        paymentEvent.setTransactionId(payment.getTransactionId());
-        paymentEvent.setTimestamp(LocalDateTime.now());
-
-        if (payment.getStatus() == PaymentStatus.COMPLETED) {
-            paymentEvent.setEventType(PaymentEvent.PAYMENT_PROCESSED);
-        } else {
-            paymentEvent.setEventType(PaymentEvent.PAYMENT_FAILED);
-        }
-
-        rabbitMQSender.sendPaymentEvent(paymentEvent);
-
         return payment;
     }
 
-    @Transactional
-    public Payment processRefund(OrderEvent orderEvent) {
-        LOGGER.info("Processing refund for order: {}", orderEvent.getOrderId());
+    /**
+     * Update payment status based on payment result
+     *
+     * @param payment The payment to update
+     * @param successful Whether the payment was successful
+     * @return The updated payment
+     */
+    private Payment updatePaymentStatus(Payment payment, boolean successful) {
+        // Update payment status based on success or failure
+        LOGGER.info("Updating payment status: {}", payment.getPaymentMethod());
+        payment.setStatus(successful ? PaymentStatus.COMPLETED : PaymentStatus.FAILED);
+        return paymentRepository.save(payment);
+    }
 
-        // Find the original payment
-        Payment originalPayment = paymentRepository.findByOrderId(orderEvent.getOrderId())
+    /**
+     * Find a completed payment for an order
+     *
+     * @param orderId The order ID
+     * @return The completed payment, or null if not found
+     */
+    private Payment findCompletedPaymentForOrder(String orderId) {
+        LOGGER.info("Finding completed payment for order: {}", orderId);
+        return paymentRepository.findByOrderId(orderId)
                 .stream()
                 .filter(p -> p.getStatus() == PaymentStatus.COMPLETED)
                 .findFirst()
                 .orElse(null);
+    }
 
-        if (originalPayment == null) {
-            LOGGER.error("No completed payment found for order: {}", orderEvent.getOrderId());
-            return null;
-        }
-
-        // Create a refund record
+    /**
+     * Create a refund payment based on an original payment
+     *
+     * @param originalPayment The original payment
+     * @return The created refund payment
+     */
+    private Payment createRefundFromOriginalPayment(Payment originalPayment) {
+        // Create a new refund payment object
         Payment refund = new Payment();
-        refund.setOrderId(orderEvent.getOrderId());
+        refund.setOrderId(originalPayment.getOrderId());
         refund.setAmount(originalPayment.getAmount());
         refund.setStatus(PaymentStatus.PENDING);
         refund.setPaymentMethod(originalPayment.getPaymentMethod());
         refund.setTransactionId("REFUND-" + UUID.randomUUID().toString());
         refund.setCreated(LocalDateTime.now());
+        return refund;
+    }
 
-        // Save refund record
-        refund = paymentRepository.save(refund);
-
-        // Process the refund (simulate payment gateway call)
-        boolean refundSuccessful = processRefundWithGateway(refund, originalPayment);
-
-        if (refundSuccessful) {
+    /**
+     * Update refund and original payment status based on refund result
+     *
+     * @param refund The refund payment to update
+     * @param originalPayment The original payment to update
+     * @param successful Whether the refund was successful
+     */
+    private void updateRefundStatus(Payment refund, Payment originalPayment, boolean successful) {
+        // Update refund status based on success or failure
+        if (successful) {
+            LOGGER.info("Updating refund status: {}", refund.getPaymentMethod());
             refund.setStatus(PaymentStatus.REFUNDED);
             originalPayment.setStatus(PaymentStatus.REFUNDED);
             paymentRepository.save(originalPayment);
         } else {
             refund.setStatus(PaymentStatus.FAILED);
         }
-
-        // Update refund record
-        refund = paymentRepository.save(refund);
-
-        // Send payment event
-        PaymentEvent paymentEvent = new PaymentEvent();
-        paymentEvent.setPaymentId(refund.getId());
-        paymentEvent.setOrderId(refund.getOrderId());
-        paymentEvent.setStatus(refund.getStatus());
-        paymentEvent.setAmount(refund.getAmount());
-        paymentEvent.setTransactionId(refund.getTransactionId());
-        paymentEvent.setTimestamp(LocalDateTime.now());
-
-        if (refund.getStatus() == PaymentStatus.REFUNDED) {
-            paymentEvent.setEventType(PaymentEvent.PAYMENT_REFUNDED);
-        } else {
-            paymentEvent.setEventType(PaymentEvent.PAYMENT_FAILED);
-        }
-
-        rabbitMQSender.sendPaymentEvent(paymentEvent);
-
-        return refund;
-    }
-
-    // Simulate payment gateway integration
-    private boolean processPaymentWithGateway(Payment payment) {
-        // Use the strategy pattern to process the payment based on payment method
-        boolean gatewaySuccess = strategyContext.processPayment(payment);
-
-        if (gatewaySuccess) {
-            // Use the chain of responsibility to handle the complete payment workflow
-            paymentProcessor.processPayment(payment);
-        }
-
-        return gatewaySuccess;
-    }
-
-    // Simulate refund gateway integration
-    private boolean processRefundWithGateway(Payment refund, Payment originalPayment) {
-        // In a real system, this would integrate with a payment gateway API
-        // For this example, we'll simulate a 90% success rate
-        return Math.random() < 0.9;
-    }
-
-    public Payment getPaymentById(Long id) {
-        return paymentRepository.findById(id).orElse(null);
-    }
-
-    public Payment getPaymentByTransactionId(String transactionId) {
-        return paymentRepository.findByTransactionId(transactionId);
-    }
-
-    public List<Payment> getAllPayments() {
-        return paymentRepository.findAll();
+        paymentRepository.save(refund);
     }
 }

@@ -13,6 +13,7 @@ import NoActiveOrdersPage from './pages/NoActiveOrdersPage';
 import { OrderProvider } from './context/OrderContext';
 import ProtectedRoute from './route/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext'; // Add this import
+import { CartProvider} from "./context/CartContext";
 
 const theme = createTheme({
   typography: {
@@ -33,6 +34,8 @@ const App = () => {
     <ThemeProvider theme={theme}>
       <AuthProvider>
         <BrowserRouter>
+        <CartProvider>
+
           <OrderProvider>
             <LocationPopup />
             <div className='bg-white'></div>
@@ -61,7 +64,9 @@ const App = () => {
               </Route>
             </Routes>
           </OrderProvider>
-        </BrowserRouter>
+
+        </CartProvider>
+    </BrowserRouter>
       </AuthProvider>
     </ThemeProvider>
   )

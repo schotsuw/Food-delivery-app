@@ -7,6 +7,10 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 
+/**
+ * Payment is a class that represents a payment transaction.
+ * It contains information about the order ID, amount, status, payment method, transaction ID, and creation time.
+ */
 @Data
 @Entity
 @Table(name = "payments")
@@ -17,7 +21,8 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private Long orderId;
+    // Change from Long to String for MongoDB compatibility
+    private String orderId;
     private Double amount;
 
     @Enumerated(EnumType.STRING)
@@ -26,5 +31,4 @@ public class Payment {
     private String paymentMethod;
     private String transactionId;
     private LocalDateTime created;
-
 }

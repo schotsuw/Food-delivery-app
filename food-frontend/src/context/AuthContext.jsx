@@ -17,7 +17,7 @@ export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
-  
+
   // Check if user was previously logged in (from localStorage)
   useEffect(() => {
     try {
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }) => {
   // Update user profile
   const updateUserProfile = (updatedData) => {
     if (!currentUser) return null;
-    
+
     try {
       // Create updated user object
       const updatedUser = {
@@ -45,13 +45,13 @@ export const AuthProvider = ({ children }) => {
         ...updatedData,
         updatedAt: new Date().toISOString()
       };
-      
+
       // Update localStorage
       localStorage.setItem('user', JSON.stringify(updatedUser));
-      
+
       // Update state
       setCurrentUser(updatedUser);
-      
+
       return updatedUser;
     } catch (error) {
       console.error("Error updating profile:", error);
@@ -64,11 +64,11 @@ export const AuthProvider = ({ children }) => {
   const signup = async (name, email, password) => {
     try {
       setAuthError(null);
-      
+
       // For a real app, this would be an API call to your backend
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Create a new user object with additional profile data
       const newUser = {
         id: Date.now().toString(),
@@ -79,13 +79,13 @@ export const AuthProvider = ({ children }) => {
         // In a real app, you would NEVER store the password in localStorage
         // This is just for demonstration purposes
       };
-      
+
       // Store the user in localStorage
       localStorage.setItem('user', JSON.stringify(newUser));
-      
+
       // Set the current user
       setCurrentUser(newUser);
-      
+
       return newUser;
     } catch (error) {
       console.error("Signup error:", error);
@@ -98,11 +98,11 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     try {
       setAuthError(null);
-      
+
       // For a real app, this would be an API call to validate credentials
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
       // Create sample user data - in a real app, this would come from your API
       const user = {
         id: Date.now().toString(),
@@ -111,13 +111,13 @@ export const AuthProvider = ({ children }) => {
         profilePicture: null,
         lastLogin: new Date().toISOString()
       };
-      
+
       // Store the user in localStorage
       localStorage.setItem('user', JSON.stringify(user));
-      
+
       // Set the current user
       setCurrentUser(user);
-      
+
       return user;
     } catch (error) {
       console.error("Login error:", error);
@@ -131,13 +131,13 @@ export const AuthProvider = ({ children }) => {
     try {
       // Remove user from localStorage
       localStorage.removeItem('user');
-      
+
       // Clear current user
       setCurrentUser(null);
-      
+
       // Clear any error state
       setAuthError(null);
-      
+
       return true;
     } catch (error) {
       console.error("Logout error:", error);
@@ -149,7 +149,7 @@ export const AuthProvider = ({ children }) => {
   const isAuthenticated = () => {
     return !!currentUser;
   };
-  
+
   // Get user's initial (for avatar)
   const getUserInitial = () => {
     if (!currentUser || !currentUser.name) return 'U';
@@ -170,8 +170,8 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={value}>
-      {!loading && children}
-    </AuthContext.Provider>
+      <AuthContext.Provider value={value}>
+        {!loading && children}
+      </AuthContext.Provider>
   );
 };

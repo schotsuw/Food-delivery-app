@@ -5,7 +5,11 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
+/**
+ * RestaurantRepository is an interface that extends MongoRepository to provide CRUD operations for Restaurant.
+ * It contains a method to find a restaurant by its name.
+ */
 @Repository
 public interface RestaurantRepository extends MongoRepository<Restaurant, String> {
-    Optional<Restaurant> findByName(String name);
+    Optional<Restaurant> findFirstByName(String name);
 }
