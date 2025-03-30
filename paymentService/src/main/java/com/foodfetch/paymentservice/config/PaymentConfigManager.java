@@ -33,7 +33,10 @@ public class PaymentConfigManager {
     @Value("${payment.retry.max:3}")
     private int maxRetries;
 
-
+    /**
+     * Constructor for PaymentConfigManager
+     * This constructor is private to enforce the singleton pattern.
+     */
     private PaymentConfigManager() {
         // Private constructor to enforce singleton pattern
     }
@@ -63,6 +66,12 @@ public class PaymentConfigManager {
         return instance;
     }
 
+    /**
+     * Retrieves a configuration parameter by its key.
+     *
+     * @param key The key of the configuration parameter
+     * @return The value of the configuration parameter
+     */
     public Object getConfigParam(String key) {
         return configParams.get(key);
     }

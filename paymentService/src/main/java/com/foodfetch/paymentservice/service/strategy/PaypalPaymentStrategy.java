@@ -24,8 +24,8 @@ public class PaypalPaymentStrategy implements PaymentStrategy {
     @Override
     public boolean processPayment(Payment payment) {
         LOGGER.info("Processing PayPal payment: {}", payment.getTransactionId());
-        // For simulation, return success 93% of the time
-        return Math.random() < 0.93;
+        // For simulation, return success 100% of the time
+        return true;
     }
 
     /**
@@ -39,7 +39,7 @@ public class PaypalPaymentStrategy implements PaymentStrategy {
     @Override
     public boolean processRefund(Payment refund, Payment originalPayment) {
         LOGGER.info("Processing PayPal refund: {}", refund.getTransactionId());
-        // For simulation, return success 92% of the time
-        return Math.random() < 0.92;
+        // For simulation, return success 100% of the time
+        return true;
     }
 }

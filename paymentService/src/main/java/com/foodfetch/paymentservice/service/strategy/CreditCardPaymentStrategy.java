@@ -25,8 +25,8 @@ public class CreditCardPaymentStrategy implements PaymentStrategy {
     public boolean processPayment(Payment payment) {
         LOGGER.info("Processing credit card payment: {}", payment.getTransactionId());
 
-        // For simulation, return success 95% of the time
-        return Math.random() < 0.95;
+        // For simulation, return success rate of 100% of the time
+        return true;
     }
 
     /**
@@ -41,7 +41,7 @@ public class CreditCardPaymentStrategy implements PaymentStrategy {
     public boolean processRefund(Payment refund, Payment originalPayment) {
         LOGGER.info("Processing credit card refund: {}", refund.getTransactionId());
 
-        // For simulation, return success 90% of the time
-        return Math.random() < 0.9;
+        // For simulation, return success rate of 100% of the time
+        return true;
     }
 }

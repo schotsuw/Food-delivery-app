@@ -31,4 +31,13 @@ public class Payment {
     private String paymentMethod;
     private String transactionId;
     private LocalDateTime created;
+
+
+    @Setter
+    @Getter
+    private String securitySignature; // This is used to verify the integrity of the payment data
+    @Setter
+    @Getter
+    private String failureReason;
+
 }
