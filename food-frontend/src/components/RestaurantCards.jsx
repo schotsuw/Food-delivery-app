@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import RestaurantCard from './RestaurantCard';
 import { restaurantApi } from '../services/api';
 import { CircularProgress, Alert } from '@mui/material';
+import { motion } from 'framer-motion';
 
 const RestaurantCards = () => {
     const [restaurants, setRestaurants] = useState([]);
@@ -27,34 +28,75 @@ const RestaurantCards = () => {
         fetchRestaurants();
     }, []);
 
+    // Animation variants for staggered animation
+    const container = {
+        hidden: { opacity: 0 },
+        show: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+                delayChildren: 0.3
+            }
+        }
+    };
+
     if (loading) {
         return (
             <div className="flex justify-center items-center h-40">
-                <CircularProgress />
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <CircularProgress />
+                </motion.div>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="my-4">
+            <motion.div
+                className="my-4"
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+            >
                 <Alert severity="error">{error}</Alert>
-            </div>
+            </motion.div>
         );
     }
 
     return (
-        <>
-            <section className="mb-16">
-                <h2 className="text-2xl font-bold mb-8">Restaurants</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    {restaurants.map((restaurant) => (
-                        <RestaurantCard key={restaurant.id} restaurant={restaurant} />
-                    ))}
+        <motion.section
+            className="mb-16"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+        >
 
-                </div>
-            </section>
-        </>
+
+            <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-6"
+                variants={container}
+                initial="hidden"
+                animate="show"
+            >
+                {restaurants.map((restaurant, index) => (
+                    <motion.div
+                        key={restaurant.id}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{
+                            duration: 0.4,
+                            delay: index * 0.1,
+                        }}
+                    >
+                        <RestaurantCard restaurant={restaurant} />
+                    </motion.div>
+                ))}
+            </motion.div>
+        </motion.section>
     );
 };
 

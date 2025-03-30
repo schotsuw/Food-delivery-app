@@ -14,13 +14,11 @@ const exclusiveDeals = [
     discount: '-20%',
     type: 'Restaurant',
     name: 'Grand Ai Cafe London',
-    image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-bZhQZoBNWZVZV40l3whPTkz9hKTsBg.png'
   },
   {
     discount: '-17%',
     type: 'Restaurant',
     name: 'Butterbrot Cafe London',
-    image: 'https://hebbkx1anhila5yf.public.blob.vercel-storage.com/image-bZhQZoBNWZVZV40l3whPTkz9hKTsBg.png'
   }
 ];
 
