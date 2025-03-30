@@ -48,9 +48,9 @@ public class OrderService {
      */
     @Autowired
     public OrderService(FactoryRegistry factoryRegistry,
-                        RestaurantRepository restaurantRepository,
-                        OrderRepository orderRepository,
-                        RabbitMQOrderSender messageSender) {
+            RestaurantRepository restaurantRepository,
+            OrderRepository orderRepository,
+            RabbitMQOrderSender messageSender) {
         this.factoryRegistry = factoryRegistry;
         this.restaurantRepository = restaurantRepository;
         this.orderRepository = orderRepository;
@@ -129,7 +129,6 @@ public class OrderService {
     public Page<OrderEntity> getAllOrders(Pageable pageable) {
         return orderRepository.findAll(pageable);
     }
-
 
     /**
      * Retrieves an order by its ID.
@@ -262,5 +261,21 @@ public class OrderService {
         return items.stream()
                 .mapToDouble(item -> item.getPrice() * item.getQuantity())
                 .sum();
+    }
+
+    public void completeOrder(String orderId) {
+        Optional<OrderEntity> optionalOrder = orderRepository.findById(orderId);
+
+        if (optionalOrder.isPresent()) {
+            OrderEntity order = optionalOrder.get();
+            order.setStatus(OrderStatus.DELIVERED);
+            order.setUpdatedAt(LocalDateTime.now());
+            orderRepository.save(order);
+
+            messageSender.sendNotificationEvent(order);
+            logger.info("Order {} Status Updated to DELIVERED via Tracking Event", orderId);
+        } else {
+            logger.warn("Attempted to Complete Non-Existent Order: {}", orderId);
+        }
     }
 }
