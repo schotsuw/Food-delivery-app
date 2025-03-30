@@ -4,11 +4,21 @@ import java.util.*;
 
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import com.foodfetch.trackingservice.messaging.DeliveryEvent;
+import com.foodfetch.trackingservice.messaging.DeliveryEventSender;
 import com.foodfetch.trackingservice.model.Delivery;
 
 @Service
 public class TrackingService {
+
   private final Map<Long, Delivery> trackingMap = new HashMap<>();
+  private final DeliveryEventSender deliveryEventSender;
+
+  // Constructor
+  public TrackingService(DeliveryEventSender deliveryEventSender) {
+    this.deliveryEventSender = deliveryEventSender;
+  }
 
   // Track Order
   public void track(Delivery delivery) {
@@ -30,6 +40,7 @@ public class TrackingService {
     trackingMap.put(orderId, delivery);
   }
 
+  // Get Delivery
   public Delivery getTrackingInfo(Long orderId) {
     return trackingMap.get(orderId);
   }
@@ -53,14 +64,17 @@ public class TrackingService {
       delivery.setStatus("DELIVERED");
       delivery.setEta("0 min");
       trackingMap.remove(orderId);
-      System.out.println("Delivery completed for order: " + orderId);
+
+      DeliveryEvent deliveryEvent = new DeliveryEvent(delivery.getOrderId(), delivery.getStatus());
+      deliveryEventSender.sendDeliveryEvent(deliveryEvent);
     } else {
       delivery.setEta(eta + " min");
     }
 
   }
 
-  @Scheduled(fixedRate = 60000) // every 60 seconds
+  // Update Tracking
+  @Scheduled(fixedRate = 60000)
   public void updateDeliveries() {
     for (Map.Entry<Long, Delivery> entry : trackingMap.entrySet()) {
       Long orderId = entry.getKey();
