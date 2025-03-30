@@ -85,7 +85,7 @@ const SpecialOfferPage = () => {
             <Grid item xs={12} sm={6} md={4} key={offer.id}>
               <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                 <Card className="shadow-md rounded-lg overflow-hidden">
-                  <CardMedia component="img" height="200" image={offer.image} alt={offer.name} />
+                  {/*<CardMedia component="img" height="200" image={offer.image} alt={offer.name} />*/}
                   <CardContent>
                     <Typography variant="h6" fontWeight="bold">
                       {offer.name}
@@ -104,7 +104,6 @@ const SpecialOfferPage = () => {
         </Grid>
       </Box>
       {/* Popular Categories Section */}
-      {/* Popular Categories Section */}
 <Box sx={{ mt: 10 }}>
   <Typography variant="h4" fontWeight="bold" sx={{ mb: 4 }}>
     FoodFetch Popular Categories 😋
@@ -115,13 +114,13 @@ const SpecialOfferPage = () => {
       <Grid item xs={6} sm={4} md={2} key={category.name}>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Card className="shadow-md rounded-xl overflow-hidden">
-            <CardMedia
-              component="img"
-              height="140"
-              image={`/images/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}.jpg`} // Adjust path based on actual image storage
-              alt={category.name}
-              sx={{ objectFit: "cover" }}
-            />
+            {/*<CardMedia*/}
+            {/*  component="img"*/}
+            {/*  height="140"*/}
+            {/*  image={`/images/categories/${category.name.toLowerCase().replace(/\s+/g, '-')}.jpg`} // Adjust path based on actual image storage*/}
+            {/*  alt={category.name}*/}
+            {/*  sx={{ objectFit: "cover" }}*/}
+            {/*/>*/}
             <CardContent sx={{ textAlign: "center", py: 2 }}>
               <Typography variant="subtitle1" fontWeight="bold">
                 {category.name}
