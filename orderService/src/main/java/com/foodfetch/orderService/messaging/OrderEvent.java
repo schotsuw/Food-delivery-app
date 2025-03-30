@@ -26,6 +26,11 @@ public class OrderEvent implements Serializable {
     private String customerId;
     private String paymentMethod;
 
+    private double restaurantLat;
+    private double restaurantLong;
+    private double customerLat;
+    private double customerLong;
+
     public static final String ORDER_CREATED = "ORDER_CREATED";
     public static final String ORDER_CONFIRMED = "ORDER_CONFIRMED";
     public static final String ORDER_UPDATED = "ORDER_UPDATED";
