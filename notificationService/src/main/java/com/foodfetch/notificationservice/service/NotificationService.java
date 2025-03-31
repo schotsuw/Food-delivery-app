@@ -25,10 +25,10 @@ public class NotificationService implements EventListener {
 
   private static final Logger logger = LoggerFactory.getLogger(NotificationService.class);
 
-    // Map to hold factories for different notification types
+  // Map to hold factories for different notification types
   private Map<String, NotificationFactory> factoryMap = new HashMap<>();
 
-    // EmailService instance to send emails
+  // EmailService instance to send emails
   private final EmailService emailService;
 
   // Thread-local storage for the current OrderEvent being processed
@@ -42,12 +42,11 @@ public class NotificationService implements EventListener {
    **/
   @Autowired
   public NotificationService(
-          EventManager eventManager,
-          EmailService emailService) {
+      EventManager eventManager,
+      EmailService emailService) {
 
     eventManager.addListener(this);
     this.emailService = emailService;
-
 
     // Register factories
     factoryMap.put("order-created", new OrderStatusUpdateFactory());
@@ -70,7 +69,7 @@ public class NotificationService implements EventListener {
     // Create a simple request with your email for testing
     NotificationRequest request = new NotificationRequest();
     request.setEventType(eventType);
-    request.setCustomerEmail("saran.chotsuwan000@gmail.com");  // Your email for testing
+    request.setCustomerEmail("saran.chotsuwan000@gmail.com"); // Your email for testing
 
     // Get the orderId from the current event if available
     OrderEvent event = currentEvent.get();
@@ -179,29 +178,27 @@ public class NotificationService implements EventListener {
 
     // Create notification
     Notification notification = factory.createNotification();
-    String message = notification.send();
+    String message = notification.send(request.getOrderId());
 
     // Send through appropriate channels if customer data exists
     if (request != null && request.getCustomerId() != null) {
       // Send email if email is available
       if (request.getCustomerEmail() != null) {
         emailService.sendEmail(
-                request.getCustomerEmail(),
-                "FoodFetch: " + eventType,
-                message,
-                request.getOrderId());
+            request.getCustomerEmail(),
+            "FoodFetch: " + eventType,
+            message,
+            request.getOrderId());
       }
 
-
-    }
-    else {
+    } else {
       // For testing: always email your email address when no specific customer is targeted
-        assert request != null;
-        emailService.sendEmail(
-              "saran.chotsuwan000@gmail.com",  // default email for testing
-              "FoodFetch: " + eventType,
-              message,
-              request.getOrderId());
+      assert request != null;
+      emailService.sendEmail(
+          "saran.chotsuwan000@gmail.com", // default email for testing
+          "FoodFetch: " + eventType,
+          message,
+          request.getOrderId());
 
       // Log the notification
       logger.info("Notification: {}", message);

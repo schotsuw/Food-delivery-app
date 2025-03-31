@@ -1,7 +1,6 @@
 package com.foodfetch.notificationservice.factories;
 
 import com.foodfetch.notificationservice.notifications.Notification;
-import com.foodfetch.notificationservice.notifications.OrderConfirmationNotification;
 import com.foodfetch.notificationservice.notifications.OrderCreatedNotification;
 
 /**
