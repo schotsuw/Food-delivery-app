@@ -6,7 +6,7 @@ package com.foodfetch.notificationservice.notifications;
  */
 public class OrderCreatedNotification implements Notification {
     @Override
-    public String send() {
-        return "Your Order Has Been Created";
+    public String send(String orderId) {
+        return "Your order (" + orderId + ") has been created";
     }
 }

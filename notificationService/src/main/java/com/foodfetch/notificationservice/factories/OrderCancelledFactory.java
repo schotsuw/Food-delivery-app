@@ -2,7 +2,6 @@ package com.foodfetch.notificationservice.factories;
 
 import com.foodfetch.notificationservice.notifications.Notification;
 import com.foodfetch.notificationservice.notifications.OrderCanCelledNotification;
-import com.foodfetch.notificationservice.notifications.OrderConfirmationNotification;
 
 /**
  * OrderCancelledFactory is a concrete implementation of the NotificationFactory interface.
