@@ -31,13 +31,18 @@ dependencies {
     implementation "me.paulschwarz:spring-dotenv:3.0.0"
     implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
     implementation 'org.springframework.boot:spring-boot-starter-amqp'
-    testImplementation 'org.springframework.amqp:spring-rabbit-test'
+    
     compileOnly 'org.projectlombok:lombok'
-    developmentOnly 'org.springframework.boot:spring-boot-devtools'
     annotationProcessor 'org.projectlombok:lombok'
+
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.mockito:mockito-core:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+
+    testImplementation 'org.springframework.amqp:spring-rabbit-test'
 }
+
 
 sourceSets {
     main {
