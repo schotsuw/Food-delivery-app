@@ -48,9 +48,9 @@ public class OrderService {
      */
     @Autowired
     public OrderService(FactoryRegistry factoryRegistry,
-            RestaurantRepository restaurantRepository,
-            OrderRepository orderRepository,
-            RabbitMQOrderSender messageSender) {
+                        RestaurantRepository restaurantRepository,
+                        OrderRepository orderRepository,
+                        RabbitMQOrderSender messageSender) {
         this.factoryRegistry = factoryRegistry;
         this.restaurantRepository = restaurantRepository;
         this.orderRepository = orderRepository;
@@ -192,6 +192,24 @@ public class OrderService {
 
         // Now also send notification event
         messageSender.sendNotificationEvent(order);
+
+        // Add this block to send tracking events when order is confirmed
+        if (newStatus == OrderStatus.CONFIRMED) {
+            // Set default location data if not available
+            if (order.getRestaurantLatitude() == 0 && order.getRestaurantLongitude() == 0) {
+                // Set some default values - replace with actual data if available
+                order.setRestaurantLatitude(40.7128);  // Example: NYC coordinates
+                order.setRestaurantLongitude(-74.0060);
+            }
+
+            if (order.getCustomerLatitude() == 0 && order.getCustomerLongitude() == 0) {
+                // Set some default values - replace with actual data if available
+                order.setCustomerLatitude(40.7308);  // Example: Different NYC coordinates
+                order.setCustomerLongitude(-73.9973);
+            }
+
+            messageSender.sendTrackingEvent(order);
+        }
 
         return order;
     }

@@ -26,6 +26,8 @@ public class OrderEvent implements Serializable {
     private String customerId;
     private String paymentMethod;
 
+    @Getter
+    @Setter
     private double restaurantLat;
     private double restaurantLong;
     private double customerLat;
