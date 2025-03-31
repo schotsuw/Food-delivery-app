@@ -1,5 +1,6 @@
 package com.foodfetch.orderService.messaging;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Component;
 
 import com.foodfetch.orderService.Service.OrderService;
