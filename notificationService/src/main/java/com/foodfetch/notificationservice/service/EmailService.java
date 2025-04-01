@@ -107,7 +107,7 @@ public class EmailService {
             enhancedMessage = "The chefs are working their magic on your order" + (orderId != null ? " #" + orderId : "") +
                     ". Your mouthwatering meal is being prepared with care and will be ready for delivery soon!";
         }
-        else if (eventType.contains("delivery")) {
+        else if (eventType.contains("in-transit")) {
             backgroundColor = "#3498db"; // Blue
             emoji = "🚚";
             enhancedMessage = "Your food is on the way! Your order" + (orderId != null ? " #" + orderId : "") +
@@ -125,6 +125,13 @@ public class EmailService {
             enhancedMessage = "We have an update about your order" + (orderId != null ? " #" + orderId : "") +
                     ". " + message;
         }
+        else if(eventType.contains("cancelled")) {
+            backgroundColor = "#e74c3c"; // Red
+            emoji = "❌";
+            enhancedMessage = "We're sorry to inform you that your order" + (orderId != null ? " #" + orderId : "") +
+                    " has been cancelled. If you have any questions, please contact our support team.";
+        }
+
 
         // Build the tracking URL with the actual orderId if available
         String trackingUrl = "http://localhost:5173/track-order/";

@@ -42,19 +42,22 @@ public class NotificationService implements EventListener {
    **/
   @Autowired
   public NotificationService(
-      EventManager eventManager,
-      EmailService emailService) {
+          EventManager eventManager,
+          EmailService emailService) {
 
     eventManager.addListener(this);
     this.emailService = emailService;
+
 
     // Register factories
     factoryMap.put("order-created", new OrderStatusUpdateFactory());
     factoryMap.put("order-confirmed", new OrderConfirmationFactory());
     factoryMap.put("order-preparation", new OrderPreparationFactory());
+    factoryMap.put("order-in-transit", new OrderInTransitFactory());
     factoryMap.put("delivery-update", new DeliveryUpdateFactory());
     factoryMap.put("order-arrival", new OrderArrivalFactory());
     factoryMap.put("order-status-update", new OrderStatusUpdateFactory()); // Default case
+    factoryMap.put("order-cancelled", new OrderCancelledFactory());
   }
 
   /**
@@ -69,7 +72,7 @@ public class NotificationService implements EventListener {
     // Create a simple request with your email for testing
     NotificationRequest request = new NotificationRequest();
     request.setEventType(eventType);
-    request.setCustomerEmail("saran.chotsuwan000@gmail.com"); // Your email for testing
+    request.setCustomerEmail("saran.chotsuwan000@gmail.com");  // Your email for testing
 
     // Get the orderId from the current event if available
     OrderEvent event = currentEvent.get();
@@ -83,9 +86,10 @@ public class NotificationService implements EventListener {
   }
 
   /**
-   * Processes a notification request
-   * @param request
-   * @return
+   * Processes a notification request and triggers the appropriate notification
+   *
+   * @param request The notification request containing customer data
+   * @return The message sent in the notification
    */
   public String processNotification(NotificationRequest request) {
     return handleNotification(request.getEventType(), request);
@@ -128,10 +132,12 @@ public class NotificationService implements EventListener {
           return "order-created";
         case OrderEvent.ORDER_CONFIRMED:
           return "order-confirmed";
-        case OrderEvent.ORDER_COMPLETED:
+        case OrderEvent.ORDER_COMPLETED, OrderEvent.ORDER_ARRIVAL:
           return "order-arrival";
         case OrderEvent.ORDER_CANCELLED:
           return "order-cancelled";
+        case OrderEvent.ORDER_IN_TRANSIT:
+          return "order-in-transit";
         default:
           break;
       }
@@ -150,6 +156,8 @@ public class NotificationService implements EventListener {
           return "delivery-update";
         case DELIVERED:
           return "order-arrival";
+        case CANCELLED:
+          return "order-cancelled";
         default:
           return "order-status-update";
       }
@@ -185,20 +193,22 @@ public class NotificationService implements EventListener {
       // Send email if email is available
       if (request.getCustomerEmail() != null) {
         emailService.sendEmail(
-            request.getCustomerEmail(),
-            "FoodFetch: " + eventType,
-            message,
-            request.getOrderId());
+                request.getCustomerEmail(),
+                "FoodFetch: " + eventType,
+                message,
+                request.getOrderId());
       }
 
-    } else {
+
+    }
+    else {
       // For testing: always email your email address when no specific customer is targeted
       assert request != null;
       emailService.sendEmail(
-          "saran.chotsuwan000@gmail.com", // default email for testing
-          "FoodFetch: " + eventType,
-          message,
-          request.getOrderId());
+              "saran.chotsuwan000@gmail.com",  // default email for testing
+              "FoodFetch: " + eventType,
+              message,
+              request.getOrderId());
 
       // Log the notification
       logger.info("Notification: {}", message);
