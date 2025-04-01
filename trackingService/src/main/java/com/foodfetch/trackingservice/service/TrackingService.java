@@ -1,5 +1,6 @@
 package com.foodfetch.trackingservice.service;
 
+import java.time.ZoneOffset;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -102,6 +103,9 @@ public class TrackingService {
 
     logger.info("Order {} progressed to state: {}", orderId, nextState.getStateName());
 
+    // Publish status update for all state changes
+    publishStatusUpdate(delivery);
+
     // Check if delivered
     if (nextState instanceof ArrivalState) {
       handleDeliveryCompletion(delivery);
@@ -127,9 +131,9 @@ public class TrackingService {
   /**
    * Scheduled task to update all deliveries
    */
-  @Scheduled(fixedRate = 60000) // Every minute
+  @Scheduled(fixedRate = 15000) // Every 15 seconds
   public void updateAllDeliveries() {
-    logger.info("Running scheduled update for all deliveries");
+    logger.info("Running scheduled update for all deliveries. Current tracked orders: {}", trackingMap.size());
 
     // Get a copy of the keys to avoid concurrent modification
     List<String> orderIds = new ArrayList<>(trackingMap.keySet());
@@ -137,6 +141,9 @@ public class TrackingService {
     for (String orderId : orderIds) {
       updateDeliveryState(orderId);
     }
+
+    // Add this line to call the stale deliveries check
+    checkForStaleDeliveries();
   }
 
   /**
@@ -198,4 +205,40 @@ public class TrackingService {
   public void updateTracking(Long orderId) {
     updateTracking(String.valueOf(orderId));
   }
+
+  private void checkForStaleDeliveries() {
+    long currentTime = System.currentTimeMillis();
+    logger.info("Checking for stale deliveries");
+
+    for (String orderId : new ArrayList<>(trackingMap.keySet())) {
+      Delivery delivery = trackingMap.get(orderId);
+      if (delivery == null) continue;
+
+      long lastUpdate = delivery.getStatusLastUpdated().toInstant(ZoneOffset.UTC).toEpochMilli();
+      long timeSinceLastUpdate = currentTime - lastUpdate;
+
+      logger.debug("Order {}: Status = {}, Time since last update = {} ms",
+              orderId, delivery.getStatus(), timeSinceLastUpdate);
+
+      // If more than 30 seconds since last update and not delivered
+      if (timeSinceLastUpdate > 30000 &&
+              !delivery.getStatus().equals("DELIVERED")) {
+        logger.info("Progressing stale delivery: {} from status: {}",
+                orderId, delivery.getStatus());
+        progressDelivery(orderId);
+      }
+    }
+  }
+
+  private void publishStatusUpdate(Delivery delivery) {
+    logger.info("Publishing status update for order {}: {}",
+            delivery.getOrderId(), delivery.getStatus());
+    DeliveryEvent deliveryEvent = new DeliveryEvent(
+            delivery.getOrderId(),
+            delivery.getStatus()
+    );
+    deliveryEventSender.sendDeliveryEvent(deliveryEvent);
+  }
+
+
 }

@@ -52,6 +52,18 @@ public class TrackingController {
             trackingService.getTrackingInfo(orderId).getStatus());
   }
 
+  @PutMapping("/{orderId}/next-state")
+  public ResponseEntity<String> progressToNextState(@PathVariable String orderId) {
+    Delivery delivery = trackingService.getTrackingInfo(orderId);
+    if (delivery == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    trackingService.progressDelivery(orderId);
+    return ResponseEntity.ok("Order progressed to: " +
+            trackingService.getTrackingInfo(orderId).getStatus());
+  }
+
   @PutMapping("/{orderId}/complete")
   public ResponseEntity<String> completeDelivery(@PathVariable String orderId) {
     Delivery delivery = trackingService.getTrackingInfo(orderId);
