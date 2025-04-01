@@ -1,5 +1,6 @@
 package com.foodfetch.paymentservice.service;
 
+import com.foodfetch.paymentservice.config.PaymentConfigManager;
 import com.foodfetch.paymentservice.messaging.OrderEvent;
 import com.foodfetch.paymentservice.model.Payment;
 import com.foodfetch.paymentservice.model.PaymentStatus;
@@ -32,6 +33,7 @@ public class PaymentService {
     // Service to handle payment gateway operations
     private final PaymentGatewayService paymentGatewayService;
 
+    private final PaymentConfigManager paymentConfigManager;
     /**
      * Constructor for PaymentService
      *
@@ -42,10 +44,11 @@ public class PaymentService {
     public PaymentService(
             PaymentRepository paymentRepository,
             PaymentEventService paymentEventService,
-            PaymentGatewayService paymentGatewayService) {
+            PaymentGatewayService paymentGatewayService, PaymentConfigManager paymentConfigManager) {
         this.paymentRepository = paymentRepository;
         this.paymentEventService = paymentEventService;
         this.paymentGatewayService = paymentGatewayService;
+        this.paymentConfigManager = paymentConfigManager;
     }
 
     /**
@@ -59,6 +62,9 @@ public class PaymentService {
     public Payment processInitialPayment(OrderEvent orderEvent) {
         LOGGER.info("Processing payment for order: {}", orderEvent.getOrderId());
 
+        int timeout = paymentConfigManager.getTransactionTimeout();
+        int maxRetries = paymentConfigManager.getMaxRetries();
+        String gatewayUrl = paymentConfigManager.getGatewayUrl();
         // Validate order event
         validateOrderEvent(orderEvent);
 
