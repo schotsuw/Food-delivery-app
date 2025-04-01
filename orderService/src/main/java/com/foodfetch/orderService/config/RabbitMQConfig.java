@@ -39,9 +39,13 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.queue.notification.name}")
     private String notificationQueue;
 
-    // Tracking queue for tracking events
+    // Send Events to Track
     @Value("${rabbitmq.queue.tracking.name}")
     private String trackingQueue;
+
+    // Receive Tracking Events
+    @Value("${rabbitmq.queue.order.tracking.name}")
+    private String orderTrackingQueue;
 
     // Exchange name for RabbitMQ
     @Value("${rabbitmq.exchange.name}")
@@ -63,6 +67,9 @@ public class RabbitMQConfig {
     @Value("${rabbitmq.routing.key.tracking}")
     private String trackingRoutingKey;
 
+    // Routing Key for Completed Tracking Events
+    @Value("${rabbitmq.routing.key.tracking.completed}")
+    private String trackingCompletedRoutingKey;
 
     // Order queue for order events
     @Bean
@@ -80,6 +87,12 @@ public class RabbitMQConfig {
     @Bean
     public Queue notificationQueue() {
         return new Queue(notificationQueue);
+    }
+
+    // Order Tracking Events
+    @Bean
+    public Queue orderTrackingQueue() {
+        return new Queue(orderTrackingQueue);
     }
 
     // Topic exchange: An exchange receives messages from producers and routes them to queues.
@@ -113,6 +126,15 @@ public class RabbitMQConfig {
                 .bind(notificationQueue())
                 .to(exchange())
                 .with(notificationRoutingKey);
+    }
+
+    // Order and Tracking Binding
+    @Bean
+    public Binding orderTrackingBinding() {
+        return BindingBuilder
+                .bind(orderTrackingQueue())
+                .to(exchange())
+                .with(trackingCompletedRoutingKey);
     }
 
     // Message converter: convert Java objects to JSON (serialization) and vice versa (deserialization)

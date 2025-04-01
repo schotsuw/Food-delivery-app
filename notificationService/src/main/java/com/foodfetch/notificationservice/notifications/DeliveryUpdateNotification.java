@@ -6,7 +6,7 @@ package com.foodfetch.notificationservice.notifications;
  */
 public class DeliveryUpdateNotification implements Notification {
   @Override
-  public String send() {
-    return "Your Order is Now On Route";
+  public String send(String orderId) {
+    return "Your order (" + orderId + ") is now on route";
   }
 }

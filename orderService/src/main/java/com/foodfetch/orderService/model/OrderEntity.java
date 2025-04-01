@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
@@ -31,6 +33,10 @@ public class OrderEntity {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    private double restaurantLatitude;
+    private double restaurantLongitude;
+    private double customerLatitude;
+    private double customerLongitude;
     /**
      * Constructor to create an OrderEntity with the specified restaurant ID, total amount, and list of items.
      *
@@ -46,4 +52,5 @@ public class OrderEntity {
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
+
 }

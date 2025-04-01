@@ -11,9 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * PaymentController provides REST endpoints for payment operations.
- * It allows fetching payment details by ID or transaction ID, processing payments, and retrieving all payments.
- * It uses PaymentService to handle business logic.
+ * PaymentController handles HTTP requests related to payment operations.
+ * It provides endpoints for creating, retrieving, and processing payments.
  */
 @RestController
 @RequestMapping("/api/payments")
@@ -35,16 +34,15 @@ public class PaymentController {
     }
 
     /**
-     * Get a payment by ID
+     * Endpoint to create a new payment.
      *
-     * @param id The payment ID
-     * @return The payment, or 404 if not found
+     * @param id The payment to be created
+     * @return Created Payment
      */
     @GetMapping("/{id}")
     public ResponseEntity<Payment> getPaymentById(@PathVariable Long id) {
         LOGGER.info("Fetching payment with ID: {}", id);
 
-        // Fetch payment by ID using the PaymentService
         Payment payment = paymentService.getPaymentById(id);
         if (payment != null) {
             return ResponseEntity.ok(payment);
@@ -53,18 +51,17 @@ public class PaymentController {
     }
 
     /**
-     * Test endpoint for processing a payment
+     * Endpoint to test payment processing.
      *
      * @param orderEvent The order event containing payment details
-     * @return The processed payment
+     * @return ResponseEntity with the result of the payment processing
      */
     @PostMapping("/test-payment")
     public ResponseEntity<?> testPayment(@RequestBody OrderEvent orderEvent) {
         LOGGER.info("Testing payment for order: {}", orderEvent.getOrderId());
         try {
-            // Validate order event
+            // Process payment using the service
             Payment payment = paymentService.processInitialPayment(orderEvent);
-
             return ResponseEntity.ok(payment);
         }
         catch (IllegalArgumentException e) {
@@ -78,15 +75,14 @@ public class PaymentController {
     }
 
     /**
-     * Get a payment by transaction ID
+     * Endpoint to process a refund.
      *
-     * @param transactionId The transaction ID
-     * @return The payment, or 404 if not found
+     * @param transactionId The order event containing refund details
+     * @return ResponseEntity with the result of the refund processing
      */
     @GetMapping("/transaction/{transactionId}")
     public ResponseEntity<Payment> getPaymentByTransactionId(@PathVariable String transactionId) {
         LOGGER.info("Fetching payment with transaction ID: {}", transactionId);
-        // Fetch payment by transaction ID using the PaymentService
         Payment payment = paymentService.getPaymentByTransactionId(transactionId);
         if (payment != null) {
             return ResponseEntity.ok(payment);
@@ -95,14 +91,13 @@ public class PaymentController {
     }
 
     /**
-     * Get all payments
+     * Endpoint to retrieve all payments.
      *
      * @return List of all payments
      */
     @GetMapping
     public ResponseEntity<List<Payment>> getAllPayments() {
         LOGGER.info("Fetching all payments");
-        // Fetch all payments using the PaymentService
         List<Payment> payments = paymentService.getAllPayments();
         return ResponseEntity.ok(payments);
     }

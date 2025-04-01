@@ -130,7 +130,6 @@ public class OrderService {
         return orderRepository.findAll(pageable);
     }
 
-
     /**
      * Retrieves an order by its ID.
      *
@@ -193,6 +192,24 @@ public class OrderService {
 
         // Now also send notification event
         messageSender.sendNotificationEvent(order);
+
+        // Add this block to send tracking events when order is confirmed
+        if (newStatus == OrderStatus.CONFIRMED) {
+            // Set default location data if not available
+            if (order.getRestaurantLatitude() == 0 && order.getRestaurantLongitude() == 0) {
+                // Set some default values - replace with actual data if available
+                order.setRestaurantLatitude(40.7128);  // Example: NYC coordinates
+                order.setRestaurantLongitude(-74.0060);
+            }
+
+            if (order.getCustomerLatitude() == 0 && order.getCustomerLongitude() == 0) {
+                // Set some default values - replace with actual data if available
+                order.setCustomerLatitude(40.7308);  // Example: Different NYC coordinates
+                order.setCustomerLongitude(-73.9973);
+            }
+
+            messageSender.sendTrackingEvent(order);
+        }
 
         return order;
     }
@@ -262,5 +279,21 @@ public class OrderService {
         return items.stream()
                 .mapToDouble(item -> item.getPrice() * item.getQuantity())
                 .sum();
+    }
+
+    public void completeOrder(String orderId) {
+        Optional<OrderEntity> optionalOrder = orderRepository.findById(orderId);
+
+        if (optionalOrder.isPresent()) {
+            OrderEntity order = optionalOrder.get();
+            order.setStatus(OrderStatus.DELIVERED);
+            order.setUpdatedAt(LocalDateTime.now());
+            orderRepository.save(order);
+
+            messageSender.sendNotificationEvent(order);
+            logger.info("Order {} Status Updated to DELIVERED via Tracking Event", orderId);
+        } else {
+            logger.warn("Attempted to Complete Non-Existent Order: {}", orderId);
+        }
     }
 }

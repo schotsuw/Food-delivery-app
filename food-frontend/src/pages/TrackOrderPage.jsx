@@ -58,6 +58,8 @@ const TrackOrderPage = () => {
     { sender: 'rider', message: 'I am on my way!', time: '10:45 AM' }
   ]);
 
+
+
   const sectionRef = useRef(null);
   const isInView = useInView(sectionRef, { once: true });
 
@@ -340,33 +342,197 @@ const TrackOrderPage = () => {
                   </Box>
                 </Box>
 
-                {/* Order Tracking Stepper */}
-                <Box ref={sectionRef}>
-                  <Stepper activeStep={activeStep} orientation="vertical">
+                {/* Order Tracking Stepper - Fixed Version */}
+                {/* Enhanced Order Tracking Stepper with Visual Indicators and Animations */}
+                <Box sx={{ my: 3 }}>
+                  <Stepper activeStep={activeStep} orientation="vertical" sx={{
+                    "& .MuiStepConnector-line": {
+                      minHeight: 40,
+                      borderLeftWidth: 3
+                    },
+                    "& .MuiStepConnector-root.Mui-active .MuiStepConnector-line": {
+                      borderColor: 'primary.main',
+                      borderLeftStyle: 'dashed'
+                    },
+                    "& .MuiStepConnector-root.Mui-completed .MuiStepConnector-line": {
+                      borderColor: 'success.main'
+                    }
+                  }}>
                     {orderDetails.steps && orderDetails.steps.map((step, index) => (
-                        <Step key={step.label} completed={step.completed}>
-                          <StepLabel>
-                            <motion.div
-                                initial={{ opacity: 0, x: -20 }}
-                                animate={isInView ? { opacity: 1, x: 0 } : {}}
-                                transition={{ delay: index * 0.2 }}
+                        <Step key={step.label} completed={step.completed} sx={{ mb: 2 }}>
+                          <StepLabel
+                              StepIconProps={{
+                                sx: {
+                                  color: step.completed ? 'success.main' :
+                                      (index === activeStep + 1) ? 'primary.main' : undefined,
+                                  fontSize: index === activeStep + 1 ? 28 : 24,
+                                  transition: 'all 0.3s ease',
+                                  "&.Mui-active, &.Mui-completed": {
+                                    boxShadow: 3,
+                                    borderRadius: '50%',
+                                    p: 0.5
+                                  }
+                                }
+                              }}
+                          >
+                            <Box
+                                sx={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'flex-start',
+                                  flexWrap: 'wrap',
+                                  width: '100%',
+                                  p: 1,
+                                  borderRadius: 1,
+                                  bgcolor: index === activeStep + 1 ? 'rgba(25, 118, 210, 0.08)' : 'transparent',
+                                  transition: 'background-color 0.3s ease'
+                                }}
                             >
-                              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap' }}>
-                                <Box sx={{ maxWidth: isMobile ? '70%' : '80%' }}>
-                                  <Typography variant={subtitleVariant}>{step.label}</Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {step.description}
-                                  </Typography>
-                                </Box>
-                                <Typography variant="body2" color="text.secondary">
-                                  {step.time}
+                              <Box sx={{ maxWidth: isMobile ? '70%' : '80%' }}>
+                                <Typography
+                                    variant={subtitleVariant}
+                                    sx={{
+                                      fontWeight: index === activeStep + 1 ? 'bold' : 'medium',
+                                      color: index === activeStep + 1 ? 'primary.main' : 'text.primary',
+                                      transition: 'all 0.3s ease'
+                                    }}
+                                >
+                                  {step.label}
+                                  {index === activeStep + 1 && (
+                                      <Box
+                                          component="span"
+                                          sx={{
+                                            display: 'inline-block',
+                                            ml: 1,
+                                            px: 1,
+                                            py: 0.25,
+                                            bgcolor: 'primary.main',
+                                            color: 'white',
+                                            borderRadius: 1,
+                                            fontSize: '0.75rem'
+                                          }}
+                                      >
+                                        Current
+                                      </Box>
+                                  )}
+                                </Typography>
+
+                                <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{
+                                      display: 'block',
+                                      mt: 0.5,
+                                      fontWeight: index === activeStep + 1 ? 'medium' : 'normal'
+                                    }}
+                                >
+                                  {step.description}
+
+                                  {/* Estimated time for upcoming steps */}
+                                  {index > activeStep + 1 && deliveryTime > 0 && (
+                                      <Typography
+                                          component="span"
+                                          variant="caption"
+                                          sx={{
+                                            display: 'block',
+                                            mt: 0.5,
+                                            color: 'text.secondary',
+                                            fontStyle: 'italic'
+                                          }}
+                                      >
+                                        {`Est. in ${deliveryTime - (index - activeStep - 1) * 2} mins`}
+                                      </Typography>
+                                  )}
                                 </Typography>
                               </Box>
-                            </motion.div>
+
+                              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                                {step.time && (
+                                    <Typography
+                                        variant="body2"
+                                        sx={{
+                                          fontWeight: 'medium',
+                                          color: step.completed ? 'success.main' : 'text.secondary'
+                                        }}
+                                    >
+                                      {step.time}
+                                    </Typography>
+                                )}
+
+                                {/* Status indicator */}
+                                {step.completed ? (
+                                    <Typography
+                                        variant="caption"
+                                        sx={{
+                                          color: 'success.main',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          mt: 0.5
+                                        }}
+                                    >
+                                      <span style={{ fontSize: '1.2rem', marginRight: '4px' }}>✓</span> Complete
+                                    </Typography>
+                                ) : index === activeStep + 1 ? (
+                                    <Box
+                                        sx={{
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          mt: 0.5
+                                        }}
+                                    >
+                                      <Box
+                                          component="span"
+                                          sx={{
+                                            width: 8,
+                                            height: 8,
+                                            borderRadius: '50%',
+                                            bgcolor: 'primary.main',
+                                            mr: 0.5,
+                                            animation: 'pulse 1.5s infinite',
+                                            '@keyframes pulse': {
+                                              '0%': { opacity: 1 },
+                                              '50%': { opacity: 0.3 },
+                                              '100%': { opacity: 1 }
+                                            }
+                                          }}
+                                      />
+                                      <Typography variant="caption" color="primary">
+                                        In Progress
+                                      </Typography>
+                                    </Box>
+                                ) : (
+                                    <Typography variant="caption" color="text.disabled" sx={{ mt: 0.5 }}>
+                                      Pending
+                                    </Typography>
+                                )}
+                              </Box>
+                            </Box>
                           </StepLabel>
                         </Step>
                     ))}
                   </Stepper>
+
+                  {/* Time remaining indicator at the bottom */}
+                  <Box
+                      sx={{
+                        mt: 2,
+                        p: 2,
+                        borderRadius: 2,
+                        bgcolor: 'background.paper',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                        textAlign: 'center'
+                      }}
+                  >
+                    <Typography variant="body2" color="text.secondary">
+                      Your order is on track
+                    </Typography>
+                    <Typography variant="h6" color="primary.main" sx={{ fontWeight: 'bold', mt: 1 }}>
+                      {activeStep < 3
+                          ? `Estimated arrival in ${deliveryTime} minutes`
+                          : 'Your order has been delivered!'}
+                    </Typography>
+                  </Box>
                 </Box>
               </Paper>
             </motion.div>

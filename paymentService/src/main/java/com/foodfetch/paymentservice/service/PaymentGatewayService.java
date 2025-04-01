@@ -7,43 +7,41 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-/**
+/*
  * PaymentGatewayService.java
- * This service is responsible for coordinating payment gateway interactions.
- * It uses both the Strategy pattern and Chain of Responsibility pattern to process payments.
+ * This class handles the payment processing through various payment gateways.
+ * It uses the Strategy pattern to select the appropriate payment gateway based on the payment method.
+ * It also uses the Chain of Responsibility pattern to process the payment through a series of handlers.
+ * It is responsible for orchestrating the payment process and managing the flow of payment data.
  */
 @Service
 public class PaymentGatewayService {
     private static final Logger LOGGER = LoggerFactory.getLogger(PaymentGatewayService.class);
 
+    // The strategy context for selecting the appropriate payment gateway
     private final PaymentStrategyContext strategyContext;
-    private final PaymentProcessor paymentProcessor;
 
-    public PaymentGatewayService(PaymentStrategyContext strategyContext, PaymentProcessor paymentProcessor) {
+    /**
+     * Constructor for PaymentGatewayService
+     *
+     * @param strategyContext The strategy context for selecting the appropriate payment gateway
+     */
+    public PaymentGatewayService(PaymentStrategyContext strategyContext) {
         this.strategyContext = strategyContext;
-        this.paymentProcessor = paymentProcessor;
     }
 
     /**
      * Processes a payment through the appropriate gateway based on payment method.
-     * If the gateway processing is successful, it then processes the payment through
-     * the chain of responsibility.
+     * This method ONLY handles the gateway communication, not the internal processing chain.
      *
      * @param payment The payment to be processed
-     * @return true if the payment was processed successfully, false otherwise
+     * @return true if the payment was processed successfully by the gateway, false otherwise
      */
     public boolean processPayment(Payment payment) {
         LOGGER.info("Processing payment through gateway service: {}", payment.getId());
 
         // Use the strategy pattern to process the payment based on payment method
-        boolean gatewaySuccess = strategyContext.processPayment(payment);
-
-        if (gatewaySuccess) {
-            // Use the chain of responsibility to handle the complete payment workflow
-            paymentProcessor.processPayment(payment);
-        }
-
-        return gatewaySuccess;
+        return strategyContext.processPayment(payment);
     }
 
     /**
@@ -56,8 +54,7 @@ public class PaymentGatewayService {
     public boolean processRefund(Payment refund, Payment originalPayment) {
         LOGGER.info("Processing refund through gateway service: {}", refund.getId());
 
-        // In a real system, this would integrate with a payment gateway API
-        // For this example, we'll use the strategy pattern to process the refund
+        // Use the strategy pattern to process the refund
         return strategyContext.processRefund(refund, originalPayment);
     }
 }

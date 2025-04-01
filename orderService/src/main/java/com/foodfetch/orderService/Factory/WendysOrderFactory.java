@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * WendysOrderFactory is a concrete implementation of the OrderFactory interface.
+ * Wendy'sOrderFactory is a concrete implementation of the OrderFactory interface.
  * It creates orders specifically for Wendy's restaurant, applying specific rules and validations.
  */
 public class WendysOrderFactory implements OrderFactory {
@@ -39,7 +39,10 @@ public class WendysOrderFactory implements OrderFactory {
 
         // Add Wendy's specific order processing
         order.setStatus(OrderStatus.CREATED); // Wendy's requires manual confirmation
-
+        order.setRestaurantLatitude(34.0522); // Example: Los Angeles
+        order.setRestaurantLongitude(-118.2437);
+        order.setCustomerLatitude(34.0522 + 0.01); // Nearby location
+        order.setCustomerLongitude(-118.2437 + 0.01);
         // Set Wendy's specific delivery details
         DeliveryDetails deliveryDetails = new DeliveryDetails();
         LocalDateTime estimatedDelivery = LocalDateTime.now().plusMinutes(STANDARD_PREP_TIME_MINUTES);

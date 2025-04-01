@@ -5,5 +5,5 @@ package com.foodfetch.notificationservice.notifications;
  * It provides a method to send the notification.
  */
 public interface Notification {
-  String send();
+  String send(String orderId);
 }

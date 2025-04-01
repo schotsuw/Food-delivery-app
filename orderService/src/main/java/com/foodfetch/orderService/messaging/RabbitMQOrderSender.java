@@ -63,6 +63,10 @@ public class RabbitMQOrderSender {
         event.setRestaurantId(order.getRestaurantId());
         event.setTotalAmount(order.getTotalAmount());
         event.setTimestamp(LocalDateTime.now());
+        event.setRestaurantLat(order.getRestaurantLatitude());
+        event.setRestaurantLong(order.getRestaurantLongitude());
+        event.setCustomerLat(order.getCustomerLatitude());
+        event.setCustomerLong(order.getCustomerLongitude());
 
         // Set event type based on order status
         switch (order.getStatus()) {
@@ -84,6 +88,12 @@ public class RabbitMQOrderSender {
 
         // Send to order queue
         rabbitTemplate.convertAndSend(exchange, orderRoutingKey, event);
+
+        // For CONFIRMED orders, also send to tracking queue
+        if (order.getStatus() == OrderStatus.CONFIRMED) {
+            logger.info("Sending confirmed order to tracking service: {}", order.getId());
+            rabbitTemplate.convertAndSend(exchange, trackingRoutingKey, event);
+        }
     }
 
     /**
@@ -149,6 +159,10 @@ public class RabbitMQOrderSender {
         event.setCustomerId(order.getCustomerId());
         event.setTotalAmount(order.getTotalAmount());
         event.setTimestamp(LocalDateTime.now());
+        event.setRestaurantLat(order.getRestaurantLatitude());
+        event.setRestaurantLong(order.getRestaurantLongitude());
+        event.setCustomerLat(order.getCustomerLatitude());
+        event.setCustomerLong(order.getCustomerLongitude());
 
         // Map the order status to appropriate notification type
         String notificationType = mapToNotificationType(order.getStatus());
@@ -156,6 +170,36 @@ public class RabbitMQOrderSender {
 
         // Send to notification queue
         rabbitTemplate.convertAndSend(exchange, notificationRoutingKey, event);
+    }
+
+    /**
+     * Sends a tracking event when an order is confirmed
+     *
+     * @param order The order entity containing order details
+     */
+    public void sendTrackingEvent(OrderEntity order) {
+        logger.info("Sending tracking event for order: {}", order.getId());
+
+        // Create an OrderEvent object specifically for tracking
+        OrderEvent event = new OrderEvent();
+        event.setOrderId(order.getId());
+        event.setOrderStatus(order.getStatus());
+        event.setRestaurantId(order.getRestaurantId());
+        event.setTotalAmount(order.getTotalAmount());
+        event.setTimestamp(LocalDateTime.now());
+        event.setCustomerId(order.getCustomerId());
+
+        // Set location data
+        event.setRestaurantLat(order.getRestaurantLatitude());
+        event.setRestaurantLong(order.getRestaurantLongitude());
+        event.setCustomerLat(order.getCustomerLatitude());
+        event.setCustomerLong(order.getCustomerLongitude());
+
+        // Set event type
+        event.setEventType(OrderEvent.ORDER_CONFIRMED);
+
+        // Send to tracking queue
+        rabbitTemplate.convertAndSend(exchange, trackingRoutingKey, event);
     }
 
     /**

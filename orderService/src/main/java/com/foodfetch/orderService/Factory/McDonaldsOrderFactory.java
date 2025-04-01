@@ -40,6 +40,10 @@ public class McDonaldsOrderFactory implements OrderFactory {
 
         // Add McDonald's specific order processing
         order.setStatus(OrderStatus.CREATED); // McDonald's automatically confirms orders
+        order.setRestaurantLatitude(34.0522); // Example: Los Angeles
+        order.setRestaurantLongitude(-118.2437);
+        order.setCustomerLatitude(34.0522 + 0.01); // Nearby location
+        order.setCustomerLongitude(-118.2437 + 0.01);
 
         // Set McDonald's specific delivery details
         DeliveryDetails deliveryDetails = new DeliveryDetails();
