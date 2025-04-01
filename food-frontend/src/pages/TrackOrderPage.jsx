@@ -164,7 +164,27 @@ const TrackOrderPage = () => {
         const activeStep = orderDetails.steps ? orderDetails.steps.findIndex((step) => !step.completed) - 1 : -1
 
         // If already delivered (activeStep === 3 or all steps completed), don't start timer
-        if (activeStep === 3 || (orderDetails.steps && orderDetails.steps.every((step) => step.completed))) {
+        if (
+            activeStep === 3 ||
+            deliveryTime === 0 ||
+            (orderDetails.steps && orderDetails.steps.every((step) => step.completed))
+        ) {
+            // If we're at the delivered state, make sure all steps are marked as completed
+            if (activeStep === 3 || deliveryTime === 0) {
+                const updatedSteps = [...orderDetails.steps].map((step, index) => ({
+                    ...step,
+                    completed: true,
+                    time: step.time || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                }))
+
+                setOrderDetails({
+                    ...orderDetails,
+                    steps: updatedSteps,
+                })
+
+                // Set current status index to delivered (3)
+                setCurrentStatusIndex(3)
+            }
             return
         }
 
@@ -209,6 +229,18 @@ const TrackOrderPage = () => {
                                 // Stop the interval when we reach "Delivered"
                                 clearInterval(interval)
                                 setStatusTimerInterval(null)
+
+                                // Mark all steps as completed when delivered
+                                const finalSteps = [...updatedSteps].map((step) => ({
+                                    ...step,
+                                    completed: true,
+                                    time: step.time || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                                }))
+
+                                setOrderDetails({
+                                    ...orderDetails,
+                                    steps: finalSteps,
+                                })
                             }
                         }
 
@@ -227,7 +259,32 @@ const TrackOrderPage = () => {
         return () => {
             if (interval) clearInterval(interval)
         }
-    }, [autoTransition, orderDetails, currentStatusIndex])
+    }, [autoTransition, orderDetails, currentStatusIndex, deliveryTime])
+
+    // Effect to stop the timer when delivery time reaches 0
+    useEffect(() => {
+        if (deliveryTime === 0 && statusTimerInterval) {
+            clearInterval(statusTimerInterval)
+            setStatusTimerInterval(null)
+
+            // Ensure all steps are completed when delivery time is 0
+            if (orderDetails && orderDetails.steps) {
+                const allCompleted = [...orderDetails.steps].map((step) => ({
+                    ...step,
+                    completed: true,
+                    time: step.time || new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+                }))
+
+                setOrderDetails({
+                    ...orderDetails,
+                    steps: allCompleted,
+                })
+
+                // Set current status index to delivered (3)
+                setCurrentStatusIndex(3)
+            }
+        }
+    }, [deliveryTime, statusTimerInterval, orderDetails])
 
     // Rider movement simulation
     useEffect(() => {
@@ -382,7 +439,7 @@ const TrackOrderPage = () => {
                                             sx={{
                                                 display: "flex",
                                                 alignItems: "center",
-                                                bgcolor: theme.palette.primary.main,
+                                                bgcolor: deliveryTime === 0 ? "success.main" : theme.palette.primary.main,
                                                 color: "white",
                                                 py: 0.5,
                                                 px: 1.5,
@@ -406,80 +463,101 @@ const TrackOrderPage = () => {
                                                         gap: 0.5,
                                                     }}
                                                 >
-                                                    {deliveryTime}{" "}
-                                                    <Typography component="span" variant="body2">
-                                                        {deliveryTime === 1 ? "min" : "mins"}
-                                                    </Typography>
+                                                    {deliveryTime === 0 ? (
+                                                        "Delivered!"
+                                                    ) : (
+                                                        <>
+                                                            {deliveryTime}{" "}
+                                                            <Typography component="span" variant="body2">
+                                                                {deliveryTime === 1 ? "min" : "mins"}
+                                                            </Typography>
+                                                        </>
+                                                    )}
                                                 </Typography>
                                             </motion.div>
                                         </Box>
                                     </Box>
 
                                     {/* Clean Progress Tracker */}
-                                    <Box sx={{ position: "relative", width: "100%", mt: 4, mb: 3 }}>
+                                    <Box sx={{ position: "relative", width: "100%", mt: 10, mb: 3 }}>
                                         {/* Status labels - positioned above the points */}
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                position: "absolute",
-                                                width: "100%",
-                                                top: -25,
-                                                left: 0,
-                                            }}
-                                        >
-                                            <Typography
-                                                variant="caption"
+                                        <Box sx={{ position: "absolute", top: -40, left: 0, width: "100%", px: 0 }}>
+                                            <Box
                                                 sx={{
-                                                    color: orderDetails.steps[0].completed ? "success.main" : "text.secondary",
-                                                    fontWeight: orderDetails.steps[0].completed ? "bold" : "normal",
-                                                    textAlign: "center",
+                                                    display: "flex",
+                                                    justifyContent: "space-between",
+                                                    width: "100%",
+                                                    position: "relative",
                                                 }}
                                             >
-                                                Confirmed
-                                            </Typography>
-                                            <Typography
-                                                variant="caption"
-                                                sx={{
-                                                    color: orderDetails.steps[1].completed
-                                                        ? "success.main"
-                                                        : activeStep === 0
-                                                            ? "primary.main"
-                                                            : "text.secondary",
-                                                    fontWeight: orderDetails.steps[1].completed || activeStep === 0 ? "bold" : "normal",
-                                                    textAlign: "center",
-                                                }}
-                                            >
-                                                Preparing
-                                            </Typography>
-                                            <Typography
-                                                variant="caption"
-                                                sx={{
-                                                    color: orderDetails.steps[2].completed
-                                                        ? "success.main"
-                                                        : activeStep === 1
-                                                            ? "primary.main"
-                                                            : "text.secondary",
-                                                    fontWeight: orderDetails.steps[2].completed || activeStep === 1 ? "bold" : "normal",
-                                                    textAlign: "center",
-                                                }}
-                                            >
-                                                On the Way
-                                            </Typography>
-                                            <Typography
-                                                variant="caption"
-                                                sx={{
-                                                    color: orderDetails.steps[3].completed
-                                                        ? "success.main"
-                                                        : activeStep === 2
-                                                            ? "primary.main"
-                                                            : "text.secondary",
-                                                    fontWeight: orderDetails.steps[3].completed || activeStep === 2 ? "bold" : "normal",
-                                                    textAlign: "center",
-                                                }}
-                                            >
-                                                Delivered
-                                            </Typography>
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{
+                                                        color: orderDetails.steps[0].completed ? "success.main" : "text.secondary",
+                                                        fontWeight: orderDetails.steps[0].completed ? "bold" : "normal",
+                                                        position: "absolute",
+                                                        left: 0,
+                                                        transform: "translateX(-25%)",
+                                                        textAlign: "center",
+                                                    }}
+                                                >
+                                                    Confirmed
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{
+                                                        color: orderDetails.steps[1].completed
+                                                            ? "success.main"
+                                                            : activeStep === 0
+                                                                ? "primary.main"
+                                                                : "text.secondary",
+                                                        fontWeight: orderDetails.steps[1].completed || activeStep === 0 ? "bold" : "normal",
+                                                        position: "absolute",
+                                                        left: "33.3%",
+                                                        transform: "translateX(-50%)",
+                                                        textAlign: "center",
+                                                    }}
+                                                >
+                                                    Preparing
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{
+                                                        color: orderDetails.steps[2].completed
+                                                            ? "success.main"
+                                                            : activeStep === 1
+                                                                ? "primary.main"
+                                                                : "text.secondary",
+                                                        fontWeight: orderDetails.steps[2].completed || activeStep === 1 ? "bold" : "normal",
+                                                        position: "absolute",
+                                                        left: "66.6%",
+                                                        transform: "translateX(-50%)",
+                                                        textAlign: "center",
+                                                    }}
+                                                >
+                                                    On the Way
+                                                </Typography>
+
+                                                <Typography
+                                                    variant="caption"
+                                                    sx={{
+                                                        color: orderDetails.steps[3].completed
+                                                            ? "success.main"
+                                                            : activeStep === 2
+                                                                ? "primary.main"
+                                                                : "text.secondary",
+                                                        fontWeight: orderDetails.steps[3].completed || activeStep === 2 ? "bold" : "normal",
+                                                        position: "absolute",
+                                                        left: "100%",
+                                                        transform: "translateX(-75%)",
+                                                        textAlign: "center",
+                                                    }}
+                                                >
+                                                    Delivered
+                                                </Typography>
+                                            </Box>
                                         </Box>
 
                                         {/* Background track */}
@@ -508,7 +586,7 @@ const TrackOrderPage = () => {
                                                                         ? 75 + ((60 - statusTimer) / 60) * 25
                                                                         : 100
                                                     }%`,
-                                                    bgcolor: "primary.main",
+                                                    bgcolor: deliveryTime === 0 ? "success.main" : "primary.main",
                                                     borderRadius: 3,
                                                     transition: "width 0.5s ease-out",
                                                 }}
@@ -544,7 +622,7 @@ const TrackOrderPage = () => {
                                                     border: "2px solid white",
                                                     boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
                                                     zIndex: 2,
-                                                    animation: activeStep === 0 ? "pulse 1.5s infinite" : "none",
+                                                    animation: activeStep === 0 && deliveryTime > 0 ? "pulse 1.5s infinite" : "none",
                                                     "@keyframes pulse": {
                                                         "0%": { boxShadow: "0 0 0 0 rgba(25, 118, 210, 0.7)" },
                                                         "70%": { boxShadow: "0 0 0 6px rgba(25, 118, 210, 0)" },
@@ -567,7 +645,7 @@ const TrackOrderPage = () => {
                                                     border: "2px solid white",
                                                     boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
                                                     zIndex: 2,
-                                                    animation: activeStep === 1 ? "pulse 1.5s infinite" : "none",
+                                                    animation: activeStep === 1 && deliveryTime > 0 ? "pulse 1.5s infinite" : "none",
                                                     "@keyframes pulse": {
                                                         "0%": { boxShadow: "0 0 0 0 rgba(25, 118, 210, 0.7)" },
                                                         "70%": { boxShadow: "0 0 0 6px rgba(25, 118, 210, 0)" },
@@ -590,7 +668,7 @@ const TrackOrderPage = () => {
                                                     border: "2px solid white",
                                                     boxShadow: "0 1px 4px rgba(0,0,0,0.2)",
                                                     zIndex: 2,
-                                                    animation: activeStep === 2 ? "pulse 1.5s infinite" : "none",
+                                                    animation: activeStep === 2 && deliveryTime > 0 ? "pulse 1.5s infinite" : "none",
                                                     "@keyframes pulse": {
                                                         "0%": { boxShadow: "0 0 0 0 rgba(25, 118, 210, 0.7)" },
                                                         "70%": { boxShadow: "0 0 0 6px rgba(25, 118, 210, 0)" },
@@ -600,8 +678,8 @@ const TrackOrderPage = () => {
                                             />
                                         </Box>
 
-                                        {/* Status timer indicator */}
-                                        {activeStep >= 0 && activeStep < 3 && (
+                                        {/* Status timer indicator - only show if not delivered */}
+                                        {activeStep >= 0 && activeStep < 3 && deliveryTime > 0 && (
                                             <Box
                                                 sx={{
                                                     position: "absolute",
@@ -768,7 +846,7 @@ const TrackOrderPage = () => {
                                                                         Current
                                                                     </Box>
                                                                 )}
-                                                                {index === activeStep + 1 && (
+                                                                {index === activeStep + 1 && deliveryTime > 0 && (
                                                                     <Box sx={{ mt: 1, display: "flex", alignItems: "center", gap: 1 }}>
                                                                         <Box
                                                                             component="div"
