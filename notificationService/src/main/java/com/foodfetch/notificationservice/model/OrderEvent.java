@@ -14,6 +14,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderEvent implements Serializable {
+
     @Setter
     @Getter
     private String orderId;
@@ -32,4 +33,6 @@ public class OrderEvent implements Serializable {
     public static final String ORDER_UPDATED = "ORDER_UPDATED";
     public static final String ORDER_CANCELLED = "ORDER_CANCELLED";
     public static final String ORDER_COMPLETED = "ORDER_COMPLETED";
+    public static final String ORDER_ARRIVAL = "ORDER_ARRIVAL";
+    public static final String ORDER_IN_TRANSIT = "ORDER_IN_TRANSIT";
 }

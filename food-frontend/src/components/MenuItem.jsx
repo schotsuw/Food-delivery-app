@@ -92,7 +92,7 @@ const MenuItem = ({ item, isFavorite, restaurant, onToggleFavorite }) => {
                             <motion.img
                                 src={item.imageUrl}
                                 alt={item.name}
-                                className="h-40 w-full object-cover"
+                                className="h-40 w-full object-contain"
                                 whileHover={{ scale: 1.05 }}
                                 transition={{ duration: 0.3 }}
                             />

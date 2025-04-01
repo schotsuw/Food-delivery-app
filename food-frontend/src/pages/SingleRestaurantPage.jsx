@@ -9,7 +9,8 @@ import {
     Box,
     Chip,
     Container,
-    Divider
+    Divider,
+    Paper
 } from '@mui/material';
 import {
     AccessTime as AccessTimeIcon,
@@ -20,6 +21,23 @@ import {
 } from '@mui/icons-material';
 import { motion } from 'framer-motion';
 import RestaurantMenu from '../components/RestaurantMenu';
+
+// Default logos mapping for fallback
+const RESTAURANT_LOGOS = {
+    "mcdonalds": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/McDonald%27s_Golden_Arches.svg/2339px-McDonald%27s_Golden_Arches.svg.png",
+    "wendys": "https://upload.wikimedia.org/wikipedia/en/thumb/3/32/Wendy%27s_full_logo_2012.svg/640px-Wendy%27s_full_logo_2012.svg.png",
+    "burger king": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/85/Burger_King_logo_%281999%29.svg/2024px-Burger_King_logo_%281999%29.svg.png",
+    // Add more as needed
+};
+
+// Brand colors mapping
+const BRAND_COLORS = {
+    "mcdonalds": { primary: '#DA291C', secondary: '#FFC72C', text: '#fff' },
+    "wendys": { primary: '#C6002B', secondary: '#FFB81C', text: '#fff' },
+    "burger king": { primary: '#D62300', secondary: '#F5EBDC', text: '#fff' },
+    // Add more as needed
+    "default": { primary: '#f44336', secondary: '#ffeb3b', text: '#fff' }
+};
 
 const SingleRestaurantPage = () => {
     const { restaurantSlug } = useParams();
@@ -41,7 +59,6 @@ const SingleRestaurantPage = () => {
                 const menuResponse = await restaurantApi.getMenuByRestaurant(restaurantResponse.data.id);
 
                 // Add category to menu items if it doesn't exist
-                // This is just for demo purposes - your actual API might already include categories
                 const categorizedMenuItems = menuResponse.data.map(item => ({
                     ...item,
                     category: item.category || getCategoryByName(item.name)
@@ -60,8 +77,45 @@ const SingleRestaurantPage = () => {
         fetchRestaurantDetails();
     }, [restaurantSlug]);
 
+    // Helper function to get appropriate logo URL
+    const getLogoUrl = (restaurant) => {
+        // First priority: Use the imageUrl from the database if available
+        if (restaurant.imageUrl) return restaurant.imageUrl;
+
+        // Second priority: Use the logoUrl if available
+        if (restaurant.logoUrl) return restaurant.logoUrl;
+
+        // Third priority: Check if we have a default logo for this restaurant
+        const restaurantName = restaurant.name.toLowerCase();
+
+        // Find matching restaurant name in our logo mapping
+        for (const [key, url] of Object.entries(RESTAURANT_LOGOS)) {
+            if (restaurantName.includes(key)) {
+                return url;
+            }
+        }
+
+        // Return a generic placeholder if no match found
+        return '/placeholder-logo.png';
+    };
+
+    // Helper function to get brand colors
+    const getBrandColors = (restaurant) => {
+        if (!restaurant || !restaurant.name) return BRAND_COLORS.default;
+
+        const restaurantName = restaurant.name.toLowerCase();
+
+        // Find matching restaurant name in our brand colors mapping
+        for (const [key, colors] of Object.entries(BRAND_COLORS)) {
+            if (restaurantName.includes(key)) {
+                return colors;
+            }
+        }
+
+        return BRAND_COLORS.default;
+    };
+
     // Helper function to assign sample categories based on item name
-    // This is for demo purposes - in a real app, categories would come from your backend
     const getCategoryByName = (name) => {
         const nameLower = name.toLowerCase();
         if (nameLower.includes('burger') || nameLower.includes('sandwich')) return 'Burgers & Sandwiches';
@@ -155,6 +209,10 @@ const SingleRestaurantPage = () => {
         );
     }
 
+    // Get brand-specific colors
+    const brandColors = getBrandColors(restaurant);
+    const logoUrl = getLogoUrl(restaurant);
+
     return (
         <Container maxWidth="lg" className="py-6">
             <motion.div
@@ -164,37 +222,175 @@ const SingleRestaurantPage = () => {
             >
                 {/* Restaurant Header */}
                 <motion.div variants={itemVariants} className="mb-8">
-                    <motion.h1
-                        className="text-3xl md:text-4xl font-bold mb-4"
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                    >
-                        {restaurant.name}
-                    </motion.h1>
-
-                    {/* Restaurant Image */}
-                    <motion.div
-                        className="w-full h-64 md:h-80 rounded-xl overflow-hidden mb-6 shadow-lg"
+                    {/* Restaurant Banner */}
+                    <Paper
+                        elevation={3}
+                        className="rounded-xl overflow-hidden mb-6"
+                        component={motion.div}
                         variants={itemVariants}
-                        whileHover={{ scale: 1.01 }}
+                        whileHover={{ y: -5 }}
                         transition={{ duration: 0.3 }}
                     >
-                        <motion.img
-                            src={restaurant.imageUrl || '/placeholder-restaurant.jpg'}
-                            alt={restaurant.name}
-                            className="w-full h-full object-cover"
-                            initial={{ scale: 1.1 }}
-                            animate={{ scale: 1 }}
-                            transition={{ duration: 1 }}
-                        />
-                    </motion.div>
+                        {/* Hero Area with Restaurant Name and Feature Background */}
+                        <Box
+                            className="relative"
+                            sx={{
+                                height: { xs: '160px', sm: '200px', md: '240px' },
+                                background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.primary} 60%, ${brandColors.secondary} 200%)`,
+                                position: 'relative',
+                                overflow: 'hidden'
+                            }}
+                        >
+                            {/* Background Pattern */}
+                            <Box
+                                className="absolute inset-0 opacity-10"
+                                sx={{
+                                    backgroundImage: 'url("data:image/svg+xml,%3Csvg width=\'20\' height=\'20\' viewBox=\'0 0 20 20\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\' fill-rule=\'evenodd\'%3E%3Ccircle cx=\'3\' cy=\'3\' r=\'3\'/%3E%3Ccircle cx=\'13\' cy=\'13\' r=\'3\'/%3E%3C/g%3E%3C/svg%3E")',
+                                    backgroundSize: '24px 24px'
+                                }}
+                            />
+
+                            {/* Restaurant Information Overlay */}
+                            <Box className="absolute inset-0 flex flex-col justify-between p-4 sm:p-6">
+                                <Box className="flex items-start">
+                                    {/* Logo Container */}
+                                    <Box
+                                        component={motion.div}
+                                        initial={{ opacity: 0, scale: 0.8 }}
+                                        animate={{ opacity: 1, scale: 1 }}
+                                        transition={{ duration: 0.5 }}
+                                        sx={{
+                                            backgroundColor: '#fff',
+                                            borderRadius: '12px',
+                                            padding: '12px',
+                                            boxShadow: '0 4px 10px rgba(0,0,0,0.25)',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            width: { xs: '80px', sm: '100px' },
+                                            height: { xs: '80px', sm: '100px' }
+                                        }}
+                                    >
+                                        <img
+                                            src={logoUrl}
+                                            alt={`${restaurant.name} logo`}
+                                            className="w-full h-full object-contain p-1"
+                                        />
+                                    </Box>
+
+                                    {/* Restaurant Name and Rating */}
+                                    <Box
+                                        className="ml-4"
+                                        component={motion.div}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ duration: 0.5, delay: 0.2 }}
+                                    >
+                                        <Typography
+                                            variant="h4"
+                                            className="font-bold drop-shadow-lg"
+                                            sx={{
+                                                color: brandColors.text,
+                                                fontSize: { xs: '1.75rem', sm: '2.25rem' }
+                                            }}
+                                        >
+                                            {restaurant.name}
+                                        </Typography>
+
+                                        <Box className="flex items-center mt-1">
+                                            <StarIcon sx={{ color: brandColors.secondary }} />
+                                            <Typography
+                                                variant="body1"
+                                                sx={{
+                                                    color: brandColors.text,
+                                                    ml: 0.5,
+                                                    fontWeight: 500,
+                                                    display: 'flex',
+                                                    alignItems: 'center'
+                                                }}
+                                            >
+                                                {restaurant.rating || '4.2'}
+                                                <Typography
+                                                    variant="body2"
+                                                    component="span"
+                                                    sx={{
+                                                        color: 'rgba(255,255,255,0.8)',
+                                                        ml: 0.5,
+                                                        fontWeight: 400
+                                                    }}
+                                                >
+                                                    ({restaurant.reviewCount || '153'} reviews)
+                                                </Typography>
+                                            </Typography>
+                                        </Box>
+                                    </Box>
+                                </Box>
+
+                                {/* Popular Tags */}
+                                <Box
+                                    className="flex flex-wrap gap-2 mb-2 mt-auto"
+                                    sx={{
+                                        justifyContent: { xs: 'flex-start', sm: 'space-between' },
+                                        alignItems: 'center'
+                                    }}
+                                >
+                                    <Box className="flex flex-wrap gap-2">
+                                        {['Great Food', 'Fast Delivery', 'Good Value'].map((tag, index) => (
+                                            <motion.div
+                                                key={tag}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: 0.3 + (index * 0.1) }}
+                                            >
+                                                <Chip
+                                                    label={tag}
+                                                    size="small"
+                                                    sx={{
+                                                        backgroundColor: 'rgba(255,255,255,0.85)',
+                                                        color: brandColors.primary,
+                                                        fontWeight: 500
+                                                    }}
+                                                />
+                                            </motion.div>
+                                        ))}
+                                    </Box>
+
+                                    {/* Featured Tag */}
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ delay: 0.6 }}
+                                    >
+                                        <Chip
+                                            label="Featured Restaurant"
+                                            size="medium"
+                                            sx={{
+                                                backgroundColor: brandColors.secondary,
+                                                color: brandColors.primary,
+                                                fontWeight: 700,
+                                                '&:hover': {
+                                                    backgroundColor: brandColors.secondary,
+                                                }
+                                            }}
+                                        />
+                                    </motion.div>
+                                </Box>
+                            </Box>
+                        </Box>
+                    </Paper>
 
                     {/* Restaurant Info Cards */}
-                    <Box className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                    <Box
+                        className="grid gap-4 mb-6"
+                        sx={{
+                            gridTemplateColumns: { xs: '1fr', md: 'repeat(3, 1fr)' }
+                        }}
+                    >
                         {/* Details Card */}
                         <motion.div
-                            className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                            component={Paper}
+                            elevation={2}
+                            className="p-4 rounded-lg"
                             variants={itemVariants}
                             whileHover={{ y: -5 }}
                             transition={{ duration: 0.2 }}
@@ -222,7 +418,9 @@ const SingleRestaurantPage = () => {
 
                         {/* Delivery Info Card */}
                         <motion.div
-                            className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                            component={Paper}
+                            elevation={2}
+                            className="p-4 rounded-lg"
                             variants={itemVariants}
                             whileHover={{ y: -5 }}
                             transition={{ duration: 0.2 }}
@@ -251,7 +449,9 @@ const SingleRestaurantPage = () => {
 
                         {/* Ratings Card */}
                         <motion.div
-                            className="bg-gray-50 p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                            component={Paper}
+                            elevation={2}
+                            className="p-4 rounded-lg"
                             variants={itemVariants}
                             whileHover={{ y: -5 }}
                             transition={{ duration: 0.2 }}
@@ -274,7 +474,7 @@ const SingleRestaurantPage = () => {
                                     {restaurant.rating || '4.2'}
                                 </Typography>
                                 <Typography variant="body2" className="text-gray-500">
-                                    (153 reviews)
+                                    ({restaurant.reviewCount || '153'} reviews)
                                 </Typography>
                             </Box>
                             <Box className="flex flex-wrap gap-1 mt-2">
@@ -299,7 +499,9 @@ const SingleRestaurantPage = () => {
 
                     {/* About Section */}
                     <motion.div
-                        className="mb-6"
+                        component={Paper}
+                        elevation={2}
+                        className="p-4 rounded-lg mb-6"
                         variants={itemVariants}
                     >
                         <Typography variant="h6" className="font-semibold mb-2">About</Typography>
