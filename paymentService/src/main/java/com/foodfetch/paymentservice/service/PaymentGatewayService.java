@@ -1,5 +1,6 @@
 package com.foodfetch.paymentservice.service;
 
+import com.foodfetch.paymentservice.config.PaymentConfigManager;
 import com.foodfetch.paymentservice.model.Payment;
 import com.foodfetch.paymentservice.service.handler.PaymentProcessor;
 import com.foodfetch.paymentservice.service.strategy.PaymentStrategyContext;
@@ -20,14 +21,15 @@ public class PaymentGatewayService {
 
     // The strategy context for selecting the appropriate payment gateway
     private final PaymentStrategyContext strategyContext;
-
+    private final PaymentConfigManager paymentConfigManager;
     /**
      * Constructor for PaymentGatewayService
      *
      * @param strategyContext The strategy context for selecting the appropriate payment gateway
      */
-    public PaymentGatewayService(PaymentStrategyContext strategyContext) {
+    public PaymentGatewayService(PaymentStrategyContext strategyContext, PaymentConfigManager paymentConfigManager) {
         this.strategyContext = strategyContext;
+        this.paymentConfigManager = paymentConfigManager;
     }
 
     /**
@@ -39,6 +41,13 @@ public class PaymentGatewayService {
      */
     public boolean processPayment(Payment payment) {
         LOGGER.info("Processing payment through gateway service: {}", payment.getId());
+
+        // Example usage of PaymentConfigManager
+        String gatewayUrl = paymentConfigManager.getGatewayUrl();
+        int maxRetries = paymentConfigManager.getMaxRetries();
+        int timeout = paymentConfigManager.getTransactionTimeout();
+
+        LOGGER.debug("Using gatewayUrl: {}, maxRetries: {}, timeout: {}", gatewayUrl, maxRetries, timeout);
 
         // Use the strategy pattern to process the payment based on payment method
         return strategyContext.processPayment(payment);
@@ -53,6 +62,13 @@ public class PaymentGatewayService {
      */
     public boolean processRefund(Payment refund, Payment originalPayment) {
         LOGGER.info("Processing refund through gateway service: {}", refund.getId());
+
+        // Potential usage
+        LOGGER.debug(
+                "Refunding via gatewayUrl: {}, with transactionTimeout: {}",
+                paymentConfigManager.getGatewayUrl(),
+                paymentConfigManager.getTransactionTimeout()
+        );
 
         // Use the strategy pattern to process the refund
         return strategyContext.processRefund(refund, originalPayment);
