@@ -74,10 +74,10 @@ public class OrderController {
      */
     @GetMapping
     public ResponseEntity<Page<OrderEntity>> getAllOrders(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "createdAt") String sortBy,
-            @RequestParam(defaultValue = "desc") String sortDir) {
+        @RequestParam(name = "page", defaultValue = "0") int page,
+        @RequestParam(name = "size", defaultValue = "10") int size,
+        @RequestParam(name = "sortBy", defaultValue = "createdAt") String sortBy,
+        @RequestParam(name = "sortDir", defaultValue = "desc") String sortDir) {
 
         try {
             Sort.Direction direction = Sort.Direction.fromString(sortDir);
@@ -98,7 +98,7 @@ public class OrderController {
      * @return OrderEntity with the specified ID
      */
     @GetMapping("/{orderId}")
-    public ResponseEntity<OrderEntity> getOrderById(@PathVariable String orderId) {
+    public ResponseEntity<OrderEntity> getOrderById(@PathVariable(name = "orderId") String orderId) {
         try {
             return ResponseEntity.ok(orderService.getOrderById(orderId));
         } catch (Exception e) {
@@ -116,7 +116,7 @@ public class OrderController {
      */
     @PutMapping("/{orderId}/status")
     public ResponseEntity<OrderEntity> updateOrderStatus(
-            @PathVariable String orderId,
+            @PathVariable(name = "orderId") String orderId,
             @RequestBody OrderStatusUpdateDTO statusUpdate) {
 
         try {
@@ -140,7 +140,7 @@ public class OrderController {
      * @return Cancelled OrderEntity
      */
     @PostMapping("/{orderId}/cancel")
-    public ResponseEntity<OrderEntity> cancelOrder(@PathVariable String orderId) {
+    public ResponseEntity<OrderEntity> cancelOrder(@PathVariable(name = "orderId") String orderId) {
         try {
             OrderEntity cancelledOrder = orderService.cancelOrder(orderId);
             return ResponseEntity.ok(cancelledOrder);

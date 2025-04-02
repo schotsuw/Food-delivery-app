@@ -1,7 +1,11 @@
 package com.foodfetch.orderService.dto;
 
 import com.foodfetch.orderService.model.OrderStatus;
+
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 /**
@@ -9,6 +13,8 @@ import java.time.LocalDateTime;
  * It contains the necessary information to represent an order.
  */
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderResponseDTO {
     private String id;
     private String restaurantName;

@@ -4,3 +4,5 @@
 # But keep these specific files
 !.idea/codeStyles/
 !.idea/inspectionProfiles/
+orderService/.DS_Store
+.DS_Store

@@ -1,6 +1,9 @@
 package com.foodfetch.orderService.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
@@ -15,6 +18,8 @@ import java.util.List;
  */
 @Data
 @Document(collection = "orders") // MongoDB collection name
+@NoArgsConstructor
+@AllArgsConstructor
 public class OrderEntity {
     @Id
     private String id;
