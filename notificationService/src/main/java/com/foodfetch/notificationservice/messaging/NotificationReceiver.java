@@ -12,6 +12,8 @@ import com.foodfetch.notificationservice.service.NotificationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Map;
+
 /**
  * NotificationReceiver is responsible for receiving messages from RabbitMQ and processing them.
  * It handles various message types and notifies the appropriate listeners.
@@ -38,6 +40,16 @@ public class NotificationReceiver {
     public void receiveMessage(Object message) {
         try {
             logger.info("Received message: {}", message);
+
+            // Add this block to handle DeliveryEvent objects
+            if (message instanceof Map) {
+                Map<String, Object> mapMessage = (Map<String, Object>) message;
+                if (mapMessage.containsKey("orderId") && mapMessage.containsKey("status")) {
+                    JsonNode jsonNode = objectMapper.valueToTree(mapMessage);
+                    processDeliveryEvent(jsonNode);
+                    return;
+                }
+            }
 
             String eventType = null;
             OrderEvent orderEvent = null;
@@ -96,6 +108,37 @@ public class NotificationReceiver {
         } catch (Exception e) {
             logger.warn("Could not convert message to OrderEvent: {}", e.getMessage());
             return null;
+        }
+    }
+
+    // Add this to your NotificationReceiver.java
+    private void processDeliveryEvent(JsonNode jsonNode) {
+        try {
+            String orderId = jsonNode.get("orderId").asText();
+            String status = jsonNode.get("status").asText();
+
+            // Map tracking service status to notification type
+            String notificationType = mapTrackingStatusToNotificationType(status);
+
+            if (notificationType != null) {
+                logger.info("Processing delivery status update: {} -> {}", status, notificationType);
+                eventManager.notifyListener(notificationType);
+            }
+        } catch (Exception e) {
+            logger.error("Error processing delivery event: {}", e.getMessage(), e);
+        }
+    }
+
+    private String mapTrackingStatusToNotificationType(String trackingStatus) {
+        switch (trackingStatus) {
+            case "PREPARING":
+                return "order-preparation";
+            case "IN_TRANSIT":
+                return "order-in-transit";
+            case "DELIVERED":
+                return "order-arrival";
+            default:
+                return "order-status-update";
         }
     }
 }

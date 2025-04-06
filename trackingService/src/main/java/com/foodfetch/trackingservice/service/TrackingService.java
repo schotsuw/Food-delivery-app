@@ -69,6 +69,9 @@ public class TrackingService {
 
     logger.info("Order {} is now being tracked with status: {}",
             delivery.getOrderId(), delivery.getStatus());
+    // Send preparation event when tracking starts
+    DeliveryEvent preparationEvent = new DeliveryEvent(delivery.getOrderId(), "PREPARING");
+    deliveryEventSender.sendDeliveryEvent(preparationEvent);
   }
 
   /**
@@ -96,17 +99,25 @@ public class TrackingService {
       return;
     }
 
+    // Remember the old status before changing it
+    String oldStatus = delivery.getStatus();
+
     // Move to the next state
     DeliveryState nextState = currentState.next();
     nextState.updateStatus(delivery);
     stateMap.put(orderId, nextState);
 
+    String newStatus = delivery.getStatus();
     logger.info("Order {} progressed to state: {}", orderId, nextState.getStateName());
 
-    // Publish status update for all state changes
-    publishStatusUpdate(delivery);
+    // Publish event for this status change
+    if (!oldStatus.equals(newStatus)) {
+      DeliveryEvent statusChangeEvent = new DeliveryEvent(delivery.getOrderId(), newStatus);
+      deliveryEventSender.sendDeliveryEvent(statusChangeEvent);
+      logger.info("Published status change event: {} -> {}", oldStatus, newStatus);
+    }
 
-    // Check if delivered
+    // Check if delivered - for backward compatibility
     if (nextState instanceof ArrivalState) {
       handleDeliveryCompletion(delivery);
     }

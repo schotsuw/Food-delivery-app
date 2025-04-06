@@ -225,4 +225,12 @@ public class RabbitMQOrderSender {
                 return "order-status-update";
         }
     }
+
+    // Add this to RabbitMQOrderSender.java
+    public void sendNotificationEventDirect(OrderEvent event) {
+        logger.info("Sending direct notification event for order: {}", event.getOrderId());
+
+        // Send to notification queue
+        rabbitTemplate.convertAndSend(exchange, notificationRoutingKey, event);
+    }
 }

@@ -44,7 +44,7 @@ public class EmailService {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
             // Set email properties
-            helper.setFrom("noreply@foodfetch.com");
+            helper.setFrom("hello@demomailtrap.co");
             helper.setTo(to);
             helper.setSubject(subject);
 
