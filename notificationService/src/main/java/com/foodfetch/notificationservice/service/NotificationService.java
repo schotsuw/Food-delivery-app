@@ -72,7 +72,7 @@ public class NotificationService implements EventListener {
     // Create a simple request with your email for testing
     NotificationRequest request = new NotificationRequest();
     request.setEventType(eventType);
-    request.setCustomerEmail("saran.chotsuwan000@gmail.com");  // Your email for testing
+    request.setCustomerEmail("saran.chot146@gmail.com");  // Your email for testing
 
     // Get the orderId from the current event if available
     OrderEvent event = currentEvent.get();
@@ -205,7 +205,7 @@ public class NotificationService implements EventListener {
       // For testing: always email your email address when no specific customer is targeted
       assert request != null;
       emailService.sendEmail(
-              "saran.chotsuwan000@gmail.com",  // default email for testing
+              "saran.chot146@gmail.com",  // default email for testing
               "FoodFetch: " + eventType,
               message,
               request.getOrderId());

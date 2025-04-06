@@ -14,6 +14,15 @@ public class DeliveryEventSender {
   @Value("${rabbitmq.routing.key.tracking.completed}")
   private String deliveryRoutingKey;
 
+  // In DeliveryEventSender.java
+  @Value("${rabbitmq.routing.key.tracking.status}")
+  private String statusUpdateRoutingKey;
+
+  // Method to send status updates
+  public void sendDeliveryStatusEvent(DeliveryEvent deliveryEvent) {
+    rabbitTemplate.convertAndSend(exchange, statusUpdateRoutingKey, deliveryEvent);
+  }
+
   // Constructor
   public DeliveryEventSender(RabbitTemplate rabbitTemplate) {
     this.rabbitTemplate = rabbitTemplate;

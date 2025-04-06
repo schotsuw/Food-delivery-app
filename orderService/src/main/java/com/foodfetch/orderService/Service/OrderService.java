@@ -4,6 +4,7 @@ import com.foodfetch.orderService.Factory.FactoryRegistry;
 import com.foodfetch.orderService.Factory.OrderFactory;
 import com.foodfetch.orderService.exception.OrderNotFoundException;
 import com.foodfetch.orderService.exception.ResourceNotFoundException;
+import com.foodfetch.orderService.messaging.OrderEvent;
 import com.foodfetch.orderService.messaging.RabbitMQOrderSender;
 import com.foodfetch.orderService.model.OrderEntity;
 import com.foodfetch.orderService.model.OrderItem;
@@ -295,5 +296,9 @@ public class OrderService {
         } else {
             logger.warn("Attempted to Complete Non-Existent Order: {}", orderId);
         }
+    }
+
+    public void sendNotificationForEvent(OrderEvent event) {
+        messageSender.sendNotificationEventDirect(event);  // Use this method instead
     }
 }
